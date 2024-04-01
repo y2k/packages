@@ -45,6 +45,9 @@
 (defn broadcast [key fx f]
   (then fx (fn [json] (dispatch key (f json)))))
 
+(defn next [fx key f]
+  (then fx (fn [json] (dispatch key (f json)))))
+
 ;;
 
 (defn attach_empty_effect_handler [world]
