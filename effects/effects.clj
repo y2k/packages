@@ -28,6 +28,16 @@
 
 ;;
 
+(defn run_io [w f] (f w))
+
+(defn fetch [url decoder props]
+  (fn [world]
+    (.perform world :fetch {:url url :decoder decoder :props props} world)))
+
+(defn database [sql args]
+  (fn [world]
+    (.perform world :database {:sql sql :args args} world)))
+
 (defn dispatch [key data]  (call :dispatch [key data]))
 (defn fork     [fx]        (call :fork     fx))
 (defn sleep    [timeout]   (call :sleep    timeout))
