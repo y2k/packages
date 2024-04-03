@@ -73,22 +73,3 @@
                  (.transform res)))))
      (.then (fn [x] (.arrayBuffer x)))
      (.then (fn [] items)))))
-
-(defn parse_tg_feed [body]
-  (parse_with_dsl
-   body
-   [:div.tgme_widget_message_bubble
-    [:div.tgme_widget_message_text :inner_text]
-    [:a.tgme_widget_message_date :href]]))
-
-(defn parse_rss_feed [body limit]
-  (parse_with_dsl
-   body
-   [:entry
-    [:link :href]
-    [:updated :inner_text]
-    [:id :inner_text]
-    [:title :inner_text]
-    [:content [:li
-               [:a :href]
-               [:a :inner_text]]]]))
