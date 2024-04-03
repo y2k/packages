@@ -18,12 +18,12 @@
 
                                  (= attr2 :inner_text)
                                  {:element (fn [element]
-                                             (reset text_buffer "")
+                                             (reset! text_buffer "")
                                              (.onEndTag
                                               element
                                               (fn []
                                                 (-> items (.at -1)  (.at index) (.at -1) (assoc! index2 (deref text_buffer)))
-                                                (reset text_buffer ""))))}
+                                                (reset! text_buffer ""))))}
 
                                  :else
                                  {:element (fn [element]
@@ -44,10 +44,10 @@
 
                             (= attr :inner_text)
                             {:element (fn [element]
-                                        (reset text_buffer "")
+                                        (reset! text_buffer "")
                                         (.onEndTag element (fn []
                                                              (-> items (.at -1) (assoc! index (deref text_buffer)))
-                                                             (reset text_buffer ""))))}
+                                                             (reset! text_buffer ""))))}
 
                             (Array/isArray attr)
                             {:element (fn [element]
@@ -66,7 +66,7 @@
 
                     (.on (str (get dsl 0) " *")
                          {:text (fn [t]
-                                  (reset text_buffer (str (deref text_buffer) t.text)))}))
+                                  (reset! text_buffer (str (deref text_buffer) t.text)))}))
 
                    0])
                  first
