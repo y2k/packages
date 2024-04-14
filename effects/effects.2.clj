@@ -19,6 +19,13 @@
        (fn [r] (let [r2 (f r)]
                  (r2 env)))))))
 
+(defn map [fx f]
+  (fn [env]
+    (let [pr (fx env)]
+      (.then
+       pr
+       (fn [r] (f r))))))
+
 (defn seq [fx fx2]
   (fn [env]
     (let [pr (fx env)]
@@ -45,21 +52,25 @@
 (defn next [fx key f]
   (then fx (fn [json] (dispatch key (f json)))))
 
+(defn with_env [f]
+  (fn [world]
+    ((f world) world)))
+
 ;;
 
 (defn attach_empty_effect_handler [world]
   (assoc
    world :perform
-   (fn [name args]
+   (fn [name args _]
      (FIXME "Effect [" name "] not handled, args: " (JSON/stringify args)))))
 
 (defn attach_eff [world key eff]
   (assoc
    world :perform
-   (fn [name args]
+   (fn [name args actual_world]
      (if (not= name key)
-       (world/perform name args)
-       (eff args)))))
+       (.perform world name args actual_world)
+       (eff actual_world args)))))
 
 (defn attach_log [world]
   (assoc world :perform
