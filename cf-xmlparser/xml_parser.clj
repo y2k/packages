@@ -1,7 +1,7 @@
 (defn parse_with_dsl [body dsl]
   (let [items []]
     (->
-     (Promise/resolve (Response. body))
+     (Promise.resolve (Response. body))
      (.then (fn [res]
               (let [text_buffer (atom "")
                     rewriter (HTMLRewriter.)]
@@ -9,7 +9,7 @@
                  (.reduce
                   (.slice dsl 1)
                   (fn [[rw index] [rl attr]]
-                    (if (Array/isArray attr)
+                    (if (Array.isArray attr)
                       (.reduce
                        (.slice attr 1)
                        (fn [[rw index2] [rl2 attr2]]
@@ -49,7 +49,7 @@
                                                              (-> items (.at -1) (assoc! index (deref text_buffer)))
                                                              (reset! text_buffer ""))))}
 
-                            (Array/isArray attr)
+                            (Array.isArray attr)
                             {:element (fn [element]
                                         (-> items (.at -1) (assoc! index [])))}
 
