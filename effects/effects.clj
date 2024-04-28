@@ -9,7 +9,7 @@
 (defn batch [xs]
   (fn [env] (->
              (.map xs (fn [f] (f env)))
-             (.all Promise))))
+             Promise.all)))
 
 (defn then [fx f]
   (fn [env]
