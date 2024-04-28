@@ -1,4 +1,4 @@
-(ns signals (:require [effects :as e]))
+(ns signals (:require ["../effects/effects.2" :as e]))
 
 (defn signal_sink [name] {:name name})
 
