@@ -1,15 +1,15 @@
 (defn run_effect [fx a] (fx a))
 
 (defn call [key data]
-  (fn [env] (env/perform key data)))
+  (fn [env] (.perform env key data)))
 
 (defn pure [x]
-  (fn [env] (Promise/resolve x)))
+  (fn [env] (.resolve Promise x)))
 
 (defn batch [xs]
   (fn [env] (->
              (.map xs (fn [f] (f env)))
-             (Promise/all))))
+             (.all Promise))))
 
 (defn then [fx f]
   (fn [env]
@@ -54,22 +54,22 @@
   (assoc
    world :perform
    (fn [name args]
-     (FIXME "Effect [" name "] not handled, args: " (JSON/stringify args)))))
+     (FIXME "Effect [" name "] not handled, args: " (.stringify JSON args)))))
 
 (defn attach_eff [world key eff]
   (assoc
    world :perform
    (fn [name args]
      (if (not= name key)
-       (world/perform name args)
+       (.perform world name args)
        (eff args)))))
 
 (defn attach_log [world]
   (assoc world :perform
          (fn [name args]
-           (println "IN:" (JSON/stringify [name args] null 2))
+           (println "IN:" (.stringify JSON [name args] null 2))
            (.then
-            (world/perform name args)
+            (.perform world name args)
             (fn [result]
-              (println "OUT:" (JSON/stringify result null 2))
+              (println "OUT:" (.stringify JSON result null 2))
               result)))))
