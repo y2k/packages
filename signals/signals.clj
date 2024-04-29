@@ -50,14 +50,14 @@
   ;;    (e/next s (fn [x] x))))
   )
 
-(defn attach_dispatch_effect_handler [world ctx]
-  (let [w2
-        (e/attach_eff
-         world
-         :dispatch
-         (fn [[signal data]]
-           (e/run_effect (send_signal ctx signal data) w2)))]
-    w2))
+;; (defn attach_dispatch_effect_handler [world ctx]
+;;   (let [w2
+;;         (e/attach_eff
+;;          world
+;;          :dispatch
+;;          (fn [[signal data]]
+;;            (e/run_effect (send_signal ctx signal data) w2)))]
+;;     w2))
 
 ;; (defn attach_dispatch_effect_handler [world ctx]
 ;;   (e/attach_eff
