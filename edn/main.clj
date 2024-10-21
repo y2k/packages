@@ -1,8 +1,13 @@
+(def- symbol_regex (RegExp. "^[a-zA-Z_][a-zA-Z0-9_]*$"))
+
 (defn to_string [x]
   (cond
+    (nil? x) "null"
     (quote? x) (.-value x)
     (number? x) (str x)
-    (string? x) (str "\"" x "\"")
+    (string? x) (if (.test symbol_regex x)
+                  (str ":" x)
+                  (str "\"" x "\""))
 
     (list? x)
     (str "("
