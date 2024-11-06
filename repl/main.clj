@@ -53,6 +53,3 @@
            (str (get process.argv 2) "/" GEN_FILE_NAME)
            (generate_code_file x)
            "utf-8"))))
-
-;; (println
-;;  (str (get process.argv 2) "/" GEN_FILE_NAME))
