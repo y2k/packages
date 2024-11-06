@@ -1,26 +1,28 @@
 (ns _ (:require [js.readline/promises :as readline]))
 
-(defn- call_command [cmd]
+(defn- call_command [env cmd]
   (let [parsed_cmd (.split cmd " ")]
     (->
      (fetch
       "http://localhost:8787/call"
       {:method "POST"
-       :body (JSON.stringify {:module (first parsed_cmd)
-                              :name (second parsed_cmd)
-                              :args (rest (rest parsed_cmd))})})
+       :body (JSON.stringify {:module (:ns env)
+                              :name (first parsed_cmd)
+                              :args (rest parsed_cmd)})})
      (.then (fn [r] (.text r)))
      (.then (fn [r] (println r))))))
 
-(defn- repl_loop []
+(defn- repl_loop [env]
   (let [rl (readline/createInterface
             {:input process.stdin
              :output process.stdout})]
     (->
-     (.question rl "> ")
+     (.question rl (str (:ns env) "=> "))
      (.then (fn [answer]
               (.close rl)
-              (call_command answer)))
-     (.then (fn [] (repl_loop))))))
+              (cond
+                (.startsWith answer "(ns ") (repl_loop (assoc env :ns (second (.split (.replace answer ")" "") " "))))
+                :else (.then (call_command env answer)
+                             (fn [] (repl_loop env)))))))))
 
-(repl_loop)
+(repl_loop {:ns "user"})

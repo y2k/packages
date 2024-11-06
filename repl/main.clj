@@ -29,21 +29,10 @@
    "\n"
    (edn/to_string
     (list 'defn 'route ['request]
-          (list 'cr/route (list 'fn ['name]
-                                (list
-                                 (spread
-                                  (concat
-                                   (concat
-                                    (list 'case 'name)
-                                    (.reduce
-                                     files
-                                     (fn [a x]
-                                       (->
-                                        a
-                                        (conj (:name x))
-                                        (conj (quote_of_string (:name x)))))
-                                     []))
-                                   (list (list 'FIXME 'name))))))
+          (list 'cr/route
+                (.reduce files
+                         (fn [a x] (assoc a (:name x) (quote_of_string (:name x))))
+                         {})
                 'request)))))
 
 (->
