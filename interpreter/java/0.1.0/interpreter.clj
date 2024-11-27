@@ -5,7 +5,7 @@
 (defn make_env []
   {:scope
    {:+ (function (fn [[^int a ^int b]] (+ a b)))}})
-1
+
 (defn eval [env node]
   (cond
     (list? node)
