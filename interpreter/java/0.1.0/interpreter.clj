@@ -1,4 +1,4 @@
-(ns main (:import [java.util.function Function]))
+(ns interpreter (:import [java.util.function Function]))
 
 (defn- ^Function function [^Function f] f)
 
@@ -6,12 +6,12 @@
   {:scope
    {:+ (function (fn [[^String a ^String b]] (+ (Integer/parseInt a) (Integer/parseInt b))))}})
 
-(defn- invoke_ [env name args]
-  ;; (println "ENV:" env)
-  (let [^Function f (get (:scope env) name)]
-    (if (= null f)
-      (FIXME name)
-      (.apply f args))))
+;; (defn- invoke_ [env name args]
+;;   ;; (println "ENV:" env)
+;;   (let [^Function f (get (:scope env) name)]
+;;     (if (= null f)
+;;       (FIXME name)
+;;       (.apply f args))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
