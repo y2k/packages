@@ -48,7 +48,14 @@
 (defn- resolve_value [env name]
   ;; (println "RESOLVE:" name env)
   (let [r (get (:scope env) name)]
-    (if (= null r) name r)))
+    (if (= null r)
+      (let [sname (as name String)]
+        (if (.startsWith sname "\"")
+          (.substring sname 1 (- (.length sname) 1))
+          (if (.startsWith sname ":")
+            (.substring sname 1 (.length sname))
+            name)))
+      r)))
 
 (defn- eval_do_body [env lexemes]
   ;; (println "EVAL_DO_BODY:" lexemes)
