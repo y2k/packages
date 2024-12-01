@@ -1,13 +1,13 @@
 (ns interpreter (:import [java.util.function Function]))
 
-(defn- ^Function function [^Function f] f)
-
-(defn make_env []
+(defn make_env [scope]
   {:scope
-   {:+ (function (fn [[a b]]
-                   (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
-                         bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
-                     (+ aa bb))))}})
+   (merge
+    {:+ (function (fn [[a b]]
+                    (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
+                          bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
+                      (+ aa bb))))}
+    scope)})
 
 ;; (defn- invoke_ [env name args]
 ;;   (println "INVOKE:" name args env)
