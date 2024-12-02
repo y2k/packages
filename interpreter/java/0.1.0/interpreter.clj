@@ -60,8 +60,9 @@
 (defn- eval_do_body [env lexemes]
   ;; (println "EVAL_DO_BODY:" lexemes)
   (let [[r env2 lx2] (eval env lexemes)]
-    (if (empty? lx2)
-      [r env2 lx2]
+    ;; (println "EVAL_DO_BODY2:" r lx2 env2)
+    (if (= ")" (first lx2))
+      [r env2 (rest lx2)]
       (eval_do_body env2 lx2))))
 
 (defn- get_lambda_body [^int level buffer lx]
@@ -83,19 +84,20 @@
           "do" (eval_do_body env2 lexemes2)
           "def" (let [name (first lexemes2)
                       [value env3 lexemes3] (eval env (rest lexemes2))]
-                  [null (register_value env3 name value) lexemes3])
+                  [null (register_value env3 name value) (rest lexemes3)])
           "bind*" (let [name (first lexemes2)
                         [value env3 lexemes3] (eval env (rest lexemes2))]
-                    [null (register_value env3 name value) lexemes3])
+                    [null (register_value env3 name value) (rest lexemes3)])
           ;; Abstraction
           "fn*" (let [[args_names lexemes3] (get_function_args_names lexemes2)
                       [body_lx lx4] (get_lambda_body 0 [] lexemes3)]
+                  ;; (println "CALL LAMBDA:" body_lx lx4)
                   [(function (fn [args]
                                (let [env3 (merge_args_with_values env2 args_names args)]
                                 ;;  (println "CALL LAMBDA:" args env3 body_lx)
-                                 (first (eval_do_body env3 body_lx)))))
+                                 (first (eval_do_body env3 (conj body_lx ")"))))))
                    env2
-                   lx4])
+                   (rest lx4)])
           ;; Application
           (let [[args lexemes3] (parse_all_args env2 lexemes2)]
             ;; (println "CALL1:" (first (rest lexemes)) args f env2)
