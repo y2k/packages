@@ -84,7 +84,7 @@
       (concat [(first (rec_eval env arg))] (eval_arg env (rest xs))))))
 
 (defn- rec_eval [env sexp]
-  ;; (println "EVAL:" sexp)
+  ;; (println "EVAL:" sexp env)
   (cond
     (= sexp null) [null env]
     (is sexp String) [(resolve_value env (as sexp String)) env]
@@ -96,12 +96,13 @@
                                  [true (register_value env dname (first (rec_eval env (get sexp 2))))]
                                  [(scope_contains env dname) env]))
                        "if" (let [[cond env2] (rec_eval env (second sexp))]
+                              ;; (println "IF:" cond sexp)
                               (if (as cond boolean)
-                                (rec_eval env2 (second sexp))
-                                (rec_eval env2 (get sexp 2))))
+                                (rec_eval env2 (get sexp 2))
+                                (rec_eval env2 (get sexp 3))))
                        "fn*" [(function (fn [args]
                                           (let [args_names (second sexp)]
-                                            ;; (FIXME args_names args)
+                                            ;; (println "FN*" args_names args env)
                                             (first
                                              (eval_do_body
                                               (merge_args_with_values env args_names args)
