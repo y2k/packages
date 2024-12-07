@@ -1,5 +1,31 @@
 (ns interpreter (:import [java.util.function Function]))
 
+;; Recursive Descent Parser
+
+(defn- parse [tokens ^int index]
+  (case (get tokens index)
+    "(" (parse_list tokens (+ index 1))
+    ")" (FIXME index tokens)
+    [(parse_atom (as (get tokens index) String)) (+ index 1)]))
+
+(defn- parse_list [tokens ^int index]
+  (let [token (get tokens index)]
+    (if (= token ")")
+      [[] (+ index 1)]
+      (let [[first ^int next_index] (parse tokens index)
+            [rest ^int final_index] (parse_list tokens next_index)]
+        [(concat [first] rest) final_index]))))
+
+(defn- parse_atom [^String token]
+  (cond
+    (= token "true") true
+    (= token "false") false
+    (= token "nil") null
+    ;; (.startsWith token "\"") (.substring token 1 (- (.length token) 1))
+    :else token))
+
+;; Scope
+
 (defn make_env [scope]
   {:scope
    (merge
@@ -9,17 +35,26 @@
                       (+ aa bb))))}
     scope)})
 
-;; (defn- invoke_ [env name args]
-;;   (println "INVOKE:" name args env)
-;;   (let [^Function f (get (:scope env) name)]
-;;     (if (= null f)
-;;       (FIXME name)
-;;       (.apply f args))))
+(defn- resolve_value [env ^String name]
+  ;; (println "RESOLVE:" name env)
+  (cond
+    (.matches name "-?\\d+(\\.\\d+)?") (Integer/parseInt name)
+    (.startsWith name "\"") (.substring name 1 (- (.length name) 1))
+    (.startsWith name ":") (.substring name 1 (.length name))
+    :else (let [r (get (:scope env) name)]
+            (if (= null r)
+              (FIXME name env)
+              r))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
-  (assoc env :scope
-         (assoc (:scope env) name value)))
+  (assoc env :scope (assoc (:scope env) name value)))
+
+(defn- scope_contains [env name]
+  ;; (println "SCOPE_CONTAINS:" name env)
+  (not= null (get (:scope env) name)))
+
+;; Eval
 
 (defn- merge_args_with_values [env args_names args]
   ;; (println "MERGE:" args_names args)
@@ -30,81 +65,48 @@
      (rest args_names)
      (rest args))))
 
-(defn- get_function_args_names [lexemes]
-  (let [hd (first lexemes)]
-    (case hd
-      "[" (get_function_args_names (rest lexemes))
-      "]" [[] (rest lexemes)]
-      (let [[vs lx2] (get_function_args_names (rest lexemes))]
-        [(concat [hd] vs) lx2]))))
-
-(defn- parse_all_args [env lx]
-  (if (= ")" (first lx))
-    [[] (rest lx)]
-    (let [[node env2 lx2] (eval env lx)
-          [rest_args lx3] (parse_all_args env2 lx2)]
-      [(concat [node] rest_args) lx3])))
-
-(defn- resolve_value [env name]
-  ;; (println "RESOLVE:" name env)
-  (let [r (get (:scope env) name)]
-    (if (= null r)
-      (let [sname (as name String)]
-        (if (.startsWith sname "\"")
-          (.substring sname 1 (- (.length sname) 1))
-          (if (.startsWith sname ":")
-            (.substring sname 1 (.length sname))
-            name)))
-      r)))
-
-(defn- eval_do_body [env lexemes]
-  ;; (println "EVAL_DO_BODY:" lexemes)
-  (let [[r env2 lx2] (eval env lexemes)]
-    ;; (println "EVAL_DO_BODY2:" r lx2 env2)
-    (if (= ")" (first lx2))
-      [r env2 (rest lx2)]
-      (eval_do_body env2 lx2))))
-
-(defn- get_lambda_body [^int level buffer lx]
-  (let [node (first lx)]
-    (case node
-      "(" (get_lambda_body (+ level 1) (conj buffer node) (rest lx))
-      ")" (if (= level 0)
-            [buffer lx]
-            (get_lambda_body (- level 1) (conj buffer node) (rest lx)))
-      (get_lambda_body level (conj buffer node) (rest lx)))))
-
-;; -> [_ Env Lexemes]
 (defn eval [env lexemes]
-  ;; (println "EVAL:" lexemes "\n" env)
-  (let [node (first lexemes)]
-    (if (= "(" node)
-      (let [[f env2 lexemes2] (eval env (rest lexemes))]
-        (case f
-          "do" (eval_do_body env2 lexemes2)
-          "def" (let [name (first lexemes2)
-                      [value env3 lexemes3] (eval env (rest lexemes2))]
-                  [null (register_value env3 name value) (rest lexemes3)])
-          "bind*" (let [name (first lexemes2)
-                        [value env3 lexemes3] (eval env (rest lexemes2))]
-                    [null (register_value env3 name value) (rest lexemes3)])
-          ;; Abstraction
-          "fn*" (let [[args_names lexemes3] (get_function_args_names lexemes2)
-                      [body_lx lx4] (get_lambda_body 0 [] lexemes3)]
-                  ;; (println "CALL LAMBDA:" body_lx lx4)
-                  [(function (fn [args]
-                               (let [env3 (merge_args_with_values env2 args_names args)]
-                                ;;  (println "CALL LAMBDA:" args env3 body_lx)
-                                 (first (eval_do_body env3 (conj body_lx ")"))))))
-                   env2
-                   (rest lx4)])
-          ;; Application
-          (let [[args lexemes3] (parse_all_args env2 lexemes2)]
-            ;; (println "CALL1:" (first (rest lexemes)) args f env2)
-            [(if (is f Function)
-               (.apply (as f Function) args)
-               ;; (invoke_ env2 f args)
-               (FIXME f " " args))
-             env2
-             lexemes3])))
-      [(resolve_value env node) env (rest lexemes)])))
+  (let [sexp (first (parse lexemes 0))]
+    (rec_eval env sexp)))
+
+(defn eval_do_body [env sexps]
+  (let [node (first sexps)
+        tail (rest sexps)
+        [r env2] (rec_eval env node)]
+    (if (empty? tail)
+      [r env2]
+      (eval_do_body env2 tail))))
+
+(defn eval_arg [env xs]
+  (if (empty? xs)
+    []
+    (let [arg (first xs)]
+      (concat [(first (rec_eval env arg))] (eval_arg env (rest xs))))))
+
+(defn- rec_eval [env sexp]
+  ;; (println "EVAL:" sexp)
+  (cond
+    (= sexp null) [null env]
+    (is sexp String) [(resolve_value env (as sexp String)) env]
+    (vector? sexp) (let [^String name (first sexp)]
+                     (case name
+                       "do" (eval_do_body env (rest sexp))
+                       "def" (let [dname (second sexp)]
+                               (if (= 3 (count sexp))
+                                 [true (register_value env dname (first (rec_eval env (get sexp 2))))]
+                                 [(scope_contains env dname) env]))
+                       "if" (let [[cond env2] (rec_eval env (second sexp))]
+                              (if (as cond boolean)
+                                (rec_eval env2 (second sexp))
+                                (rec_eval env2 (get sexp 2))))
+                       "fn*" [(function (fn [args]
+                                          (let [args_names (second sexp)]
+                                            ;; (FIXME args_names args)
+                                            (first
+                                             (eval_do_body
+                                              (merge_args_with_values env args_names args)
+                                              (rest (rest sexp)))))))
+                              env]
+                       (let [f (as (resolve_value env name) Function)]
+                         [(.apply f (eval_arg env (rest sexp))) env])))
+    :else (FIXME sexp)))
