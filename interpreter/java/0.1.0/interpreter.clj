@@ -32,7 +32,14 @@
     {:+ (function (fn [[a b]]
                     (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
                           bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
-                      (+ aa bb))))}
+                      (+ aa bb))))
+     :get (function (fn [[xs i]] (get xs i)))
+     :vector (function (fn [xs] xs))
+     :atom (function (fn [[x]] (atom x)))
+     :deref (function (fn [[x]] (deref x)))
+     :reset! (function (fn [[a x]] (reset! a x) x))
+     :str (function (fn [xs] (str (into-array2 (.-class Object) xs))))
+     :hash-map (function (fn [xs] (hash-map (into-array2 (.-class Object) xs))))}
     scope)})
 
 (defn- resolve_value [env ^String name]
@@ -43,7 +50,7 @@
     (.startsWith name ":") (.substring name 1 (.length name))
     :else (let [r (get (:scope env) name)]
             (if (= null r)
-              (FIXME name env)
+              (FIXME name " | " env)
               r))))
 
 (defn- register_value [env name value]
@@ -95,6 +102,8 @@
                                (if (= 3 (count sexp))
                                  [true (register_value env dname (first (rec_eval env (get sexp 2))))]
                                  [(scope_contains env dname) env]))
+                       "let*" (let [dname (second sexp)]
+                                [null (register_value env dname (first (rec_eval env (get sexp 2))))])
                        "if" (let [[cond env2] (rec_eval env (second sexp))]
                               ;; (println "IF:" cond sexp)
                               (if (as cond boolean)
