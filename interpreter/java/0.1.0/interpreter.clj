@@ -33,11 +33,13 @@
                     (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
                           bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
                       (+ aa bb))))
+     := (function (fn [[a b]] (= a b)))
      :get (function (fn [[xs i]] (get xs i)))
      :vector (function (fn [xs] xs))
      :atom (function (fn [[x]] (atom x)))
      :deref (function (fn [[x]] (deref x)))
      :reset! (function (fn [[a x]] (reset! a x) x))
+     :println (function (fn [xs] (println (into-array2 (.-class Object) xs))))
      :str (function (fn [xs] (str (into-array2 (.-class Object) xs))))
      :hash-map (function (fn [xs] (hash-map (into-array2 (.-class Object) xs))))}
     scope)})
