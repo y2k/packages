@@ -87,10 +87,13 @@
       (eval_do_body env2 tail))))
 
 (defn eval_arg [env xs]
+  ;; (println "EVAL_ARG:" xs)
   (if (empty? xs)
     []
-    (let [arg (first xs)]
-      (concat [(first (rec_eval env arg))] (eval_arg env (rest xs))))))
+    (let [arg (first xs)
+          x (first (rec_eval env arg))]
+      ;; (println "arg:" arg)
+      (concat [x] (eval_arg env (rest xs))))))
 
 (defn- rec_eval [env sexp]
   ;; (println "EVAL:" sexp env)
@@ -99,18 +102,18 @@
     (is sexp String) [(resolve_value env (as sexp String)) env]
     (vector? sexp) (let [^String name (first sexp)]
                      (case name
-                       "do" (eval_do_body env (rest sexp))
-                       "def" (let [dname (second sexp)]
-                               (if (= 3 (count sexp))
-                                 [true (register_value env dname (first (rec_eval env (get sexp 2))))]
-                                 [(scope_contains env dname) env]))
+                       "do*" (eval_do_body env (rest sexp))
+                       "def*" (let [dname (second sexp)]
+                                (if (= 3 (count sexp))
+                                  [true (register_value env dname (first (rec_eval env (get sexp 2))))]
+                                  [(scope_contains env dname) env]))
                        "let*" (let [dname (second sexp)]
                                 [null (register_value env dname (first (rec_eval env (get sexp 2))))])
-                       "if" (let [[cond env2] (rec_eval env (second sexp))]
+                       "if*" (let [[cond env2] (rec_eval env (second sexp))]
                               ;; (println "IF:" cond sexp)
-                              (if (as cond boolean)
-                                (rec_eval env2 (get sexp 2))
-                                (rec_eval env2 (get sexp 3))))
+                               (if (as cond boolean)
+                                 (rec_eval env2 (get sexp 2))
+                                 (rec_eval env2 (get sexp 3))))
                        "fn*" [(function (fn [args]
                                           (let [args_names (second sexp)]
                                             ;; (println "FN*" args_names args env)
