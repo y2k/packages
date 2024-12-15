@@ -2,12 +2,6 @@
 
 ;; Recursive Descent Parser
 
-(defn- parse [tokens ^int index]
-  (case (get tokens index)
-    "(" (parse_list tokens (+ index 1))
-    ")" (FIXME index tokens)
-    [(parse_atom (as (get tokens index) String)) (+ index 1)]))
-
 (defn- parse_list [tokens ^int index]
   (let [token (get tokens index)]
     (if (= token ")")
@@ -21,8 +15,14 @@
     (= token "true") true
     (= token "false") false
     (= token "nil") null
-    ;; (.startsWith token "\"") (.substring token 1 (- (.length token) 1))
+            ;; (.startsWith token "\"") (.substring token 1 (- (.length token) 1))
     :else token))
+
+(defn- parse [tokens ^int index]
+  (case (get tokens index)
+    "(" (parse_list tokens (+ index 1))
+    ")" (FIXME index tokens)
+    [(parse_atom (as (get tokens index) String)) (+ index 1)]))
 
 ;; Scope
 
