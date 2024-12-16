@@ -15,7 +15,6 @@
     (= token "true") true
     (= token "false") false
     (= token "nil") null
-            ;; (.startsWith token "\"") (.substring token 1 (- (.length token) 1))
     :else token))
 
 (defn- parse [tokens ^int index]
@@ -73,6 +72,8 @@
      (register_value env (first args_names) (first args))
      (rest args_names)
      (rest args))))
+
+(declare rec_eval)
 
 (defn eval [env lexemes]
   (let [sexp (first (parse lexemes 0))]
