@@ -1,6 +1,8 @@
-(ns interpreter (:import [java.util.function Function]))
+(ns _ (:import [java.util.function Function]))
 
 ;; Recursive Descent Parser
+
+(declare parse)
 
 (defn- parse_list [tokens ^int index]
   (let [token (get tokens index)]
