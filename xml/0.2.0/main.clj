@@ -1,7 +1,7 @@
 (defn- attrs_to_string [attrs]
   (reduce
    (fn [acc [k v]]
-     (str acc " " k "=\"" v "\""))
+     (str acc " " k "='" v "'"))
    ""
    attrs))
 
