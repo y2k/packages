@@ -49,7 +49,7 @@
   ;; (println "RESOLVE:" name env)
   (cond
     (.matches name "-?\\d+(\\.\\d+)?") (Integer/parseInt name)
-    (.startsWith name "\"") (.substring name 1 (- (.length name) 1))
+    (.startsWith name "\"") (unescape (.substring name 1 (- (.length name) 1)))
     (.startsWith name ":") (.substring name 1 (.length name))
     :else (let [r (get (:scope env) name)]
             (if (= null r)
