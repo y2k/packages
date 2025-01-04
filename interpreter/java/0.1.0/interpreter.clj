@@ -51,10 +51,9 @@
     (.matches name "-?\\d+(\\.\\d+)?") (Integer/parseInt name)
     (.startsWith name "\"") (unescape (.substring name 1 (- (.length name) 1)))
     (.startsWith name ":") (.substring name 1 (.length name))
-    :else (let [r (get (:scope env) name)]
-            (if (= null r)
-              (FIXME name " | " env)
-              r))))
+    :else (if (contains? (:scope env) name)
+            (get (:scope env) name)
+            (FIXME name " | " env))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
