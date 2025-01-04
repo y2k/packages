@@ -4,7 +4,8 @@
 (defn build-files [{target :target root-ns :root-ns rules :rules}]
   (let [res (map
              (fn [r]
-               (str "clj2js compile"
+               (str "mkdir -p $(dirname " (:target r) ")\n"
+                    "clj2js compile"
                     (if (some? root-ns)
                       (str " -root_ns " root-ns)
                       "")
