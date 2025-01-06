@@ -11,6 +11,7 @@
   (parse_response (Response. body) configure_rewriter))
 
 (defn parse [input configure_rewriter]
+  (if (nil? input) (FIXME "input is nil") nil)
   (if (string? input)
     (parse_string input configure_rewriter)
     (parse_response input configure_rewriter)))
