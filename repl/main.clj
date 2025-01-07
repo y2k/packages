@@ -21,7 +21,7 @@
           (list
            (spread
             (concat
-             (list :require ["../vendor/packages/repl/client_runtime" :as 'cr])
+             (list :require ["../vendor/repl/client_runtime" :as 'cr])
              (.map
               files
               (fn [x]
