@@ -67,9 +67,9 @@
 (defn attach_log [world]
   (assoc world :perform
          (fn [name args]
-           (println "IN:" (.stringify JSON [name args] null 2))
+           (println "IN:" (.stringify JSON [name args] nil 2))
            (.then
             (.perform world name args)
             (fn [result]
-              (println "OUT:" (.stringify JSON result null 2))
+              (println "OUT:" (.stringify JSON result nil 2))
               result)))))

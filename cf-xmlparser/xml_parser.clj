@@ -36,9 +36,9 @@
                                           (-> items
                                               (.at -1)
                                               (.at index)
-                                              (.push (.fill (Array. (- attr.length 1)) null))))}))
+                                              (.push (.fill (Array. (- attr.length 1)) nil))))}))
                         0])
-                      null)
+                      nil)
                     [(.on rw (str (get dsl 0) " " rl)
                           (cond
 
@@ -62,7 +62,7 @@
 
                     (.on (get dsl 0)
                          {:element (fn [element]
-                                     (.push items (.fill (Array. (- dsl.length 1)) null)))})
+                                     (.push items (.fill (Array. (- dsl.length 1)) nil)))})
 
                     (.on (str (get dsl 0) " *")
                          {:text (fn [t]

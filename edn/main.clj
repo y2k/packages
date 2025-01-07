@@ -2,7 +2,7 @@
 
 (defn to_string [x]
   (cond
-    (nil? x) "null"
+    (nil? x) "nil"
     (quote? x) (.-value x)
     (number? x) (str x)
     (string? x) (if (.test symbol_regex x)

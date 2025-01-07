@@ -16,7 +16,7 @@
   (cond
     (= token "true") true
     (= token "false") false
-    (= token "nil") null
+    (= token "nil") nil
     :else token))
 
 (defn- parse [tokens ^int index]
@@ -61,7 +61,7 @@
 
 (defn- scope_contains [env name]
   ;; (println "SCOPE_CONTAINS:" name env)
-  (not= null (get (:scope env) name)))
+  (not= nil (get (:scope env) name)))
 
 ;; Eval
 
@@ -100,7 +100,7 @@
 (defn- rec_eval [env sexp]
   ;; (println "EVAL:" sexp env)
   (cond
-    (= sexp null) [null env]
+    (= sexp nil) [nil env]
     (is sexp String) [(resolve_value env (as sexp String)) env]
     (vector? sexp) (let [^String name (first sexp)]
                      (case name
@@ -110,7 +110,7 @@
                                   [true (register_value env dname (first (rec_eval env (get sexp 2))))]
                                   [(scope_contains env dname) env]))
                        "let*" (let [dname (second sexp)]
-                                [null (register_value env dname (first (rec_eval env (get sexp 2))))])
+                                [nil (register_value env dname (first (rec_eval env (get sexp 2))))])
                        "if*" (let [[cond env2] (rec_eval env (second sexp))]
                               ;; (println "IF:" cond sexp)
                                (if (as cond boolean)

@@ -1,6 +1,6 @@
 (defn parse [x]
   (cond
-    (= null x) x
+    (= nil x) x
     (Array.isArray x) (.map x parse)
     (= (type x) "object") (and x (-> (Object.entries x)
                                      (.reduce (fn [a x] (assoc a (get x 0) (parse (get x 1)))) {})))
