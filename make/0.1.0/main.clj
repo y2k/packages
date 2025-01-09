@@ -14,7 +14,7 @@
              rules)]
     (reduce (fn [a x] (str a "\n\n" x)) "" res)))
 
-(defn build [{lang :lang src-dir :src-dir target-dir :target-dir items :items}]
+(defn module [{lang :lang src-dir :src-dir target-dir :target-dir items :items}]
   {:target lang
    :rules (map
            (fn [x]
@@ -42,7 +42,7 @@
    "all:"
    xs))
 
-(defn root [xs]
+(defn generate [xs]
   (reduce
    (fn [acc x]
      (str acc (build-files x)))
