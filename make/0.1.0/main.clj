@@ -14,8 +14,11 @@
              rules)]
     (reduce (fn [a x] (str a "\n\n" x)) "" res)))
 
-(defn module [{lang :lang src-dir :src-dir target-dir :target-dir items :items}]
+(defn module-files [files] files)
+
+(defn module [{lang :lang root-ns :root-ns src-dir :src-dir target-dir :target-dir items :items}]
   {:target lang
+   :root-ns root-ns
    :rules (map
            (fn [x]
              {:src (str src-dir "/" x ".clj")
