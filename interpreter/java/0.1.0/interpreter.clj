@@ -27,10 +27,15 @@
 
 ;; Scope
 
+(def- gensym_atom (atom 0))
+
 (defn make_env [scope]
   {:scope
    (merge
-    {:+ (function (fn [[a b]]
+    {:gensym (fn [args]
+               (let [id (swap! gensym_atom (fn [x] (+ (as x int) 1)))]
+                 (str "G__" id)))
+     :+ (function (fn [[a b]]
                     (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
                           bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
                       (+ aa bb))))
