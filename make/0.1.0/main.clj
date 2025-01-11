@@ -10,7 +10,8 @@
                       (str " -root_ns " root-ns)
                       "")
                     " -target " target
-                    " -src " (:src r) " > " (:target r)))
+                    " -src " (:src r) " > " (:target r)
+                    " || (rm " (:target r) " && exit 1)"))
              rules)]
     (reduce (fn [a x] (str a "\n\n" x)) "" res)))
 
