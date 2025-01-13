@@ -43,7 +43,7 @@
            (fn [ac2 r] (str ac2 " " (:target r)))
            ""
            (:rules x))))
-   "all:"
+   ".PHONY: all\nall:"
    xs))
 
 (defn generate [xs]
