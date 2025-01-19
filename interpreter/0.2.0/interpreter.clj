@@ -49,6 +49,7 @@
      :str (function (fn [xs] (str (into-array2 (.-class Object) xs))))
      :hash-map (function (fn [xs] (hash-map (into-array2 (.-class Object) xs))))
      :reduce (fn [[f def_ xs]] (reduce (fn [acc x] (f [acc x])) def_ xs))
+     :empty? (fn [[x]] (empty? x))
 ;;
      }
     scope)})
