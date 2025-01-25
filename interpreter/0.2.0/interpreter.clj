@@ -30,28 +30,27 @@
 (def- gensym_atom (atom 0))
 
 (defn make_env [scope]
-  {:scope
+  {:ns {}
+   :scope
    (merge
     {:gensym (fn [args]
                (let [id (swap! gensym_atom (fn [x] (+ (as x int) 1)))]
                  (str "G__" id)))
-     :+ (function (fn [[a b]]
-                    (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
-                          bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
-                      (+ aa bb))))
-     := (function (fn [[a b]] (= a b)))
-     :get (function (fn [[xs i]] (get xs i)))
-     :vector (function (fn [xs] xs))
-     :atom (function (fn [[x]] (atom x)))
-     :deref (function (fn [[x]] (deref x)))
-     :reset! (function (fn [[a x]] (reset! a x) x))
-     :println (function (fn [xs] (println (into-array2 (.-class Object) xs))))
-     :str (function (fn [xs] (str (into-array2 (.-class Object) xs))))
-     :hash-map (function (fn [xs] (hash-map (into-array2 (.-class Object) xs))))
+     :+ (fn [[a b]]
+          (let [aa (as (if (is a String) (Integer/parseInt (as a String)) a) int)
+                bb (as (if (is b String) (Integer/parseInt (as b String)) b) int)]
+            (+ aa bb)))
+     := (fn [[a b]] (= a b))
+     :get (fn [[xs i]] (get xs i))
+     :vector (fn [xs] xs)
+     :atom (fn [[x]] (atom x))
+     :deref (fn [[x]] (deref x))
+     :reset! (fn [[a x]] (reset! a x) x)
+     :println (fn [xs] (println (into-array2 (.-class Object) xs)))
+     :str (fn [xs] (str (into-array2 (.-class Object) xs)))
+     :hash-map (fn [xs] (hash-map (into-array2 (.-class Object) xs)))
      :reduce (fn [[f def_ xs]] (reduce (fn [acc x] (f [acc x])) def_ xs))
-     :empty? (fn [[x]] (empty? x))
-;;
-     }
+     :empty? (fn [[x]] (empty? x))}
     scope)})
 
 (defn- resolve_value [env ^String name]
@@ -62,15 +61,23 @@
     (.startsWith name ":") (.substring name 1 (.length name))
     :else (if (contains? (:scope env) name)
             (get (:scope env) name)
-            (FIXME name " | " env))))
+            (if (contains? (:ns env) name)
+              (deref (get (:ns env) name))
+              (FIXME name " | SCOPE: " (map (fn [[k]] k) (:scope env)))))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
   (assoc env :scope (assoc (:scope env) name value)))
 
+;; Namespace definitions
+
+(defn- register_def [env name value]
+  ;; (println "REGISTER:" name value)
+  (assoc env :ns (assoc (:ns env) name value)))
+
 (defn- scope_contains [env name]
   ;; (println "SCOPE_CONTAINS:" name env)
-  (not= nil (get (:scope env) name)))
+  (not= nil (get (:ns env) name)))
 
 ;; Eval
 
@@ -86,11 +93,11 @@
 (declare rec_eval)
 
 (defn eval [env lexemes]
-  (let [sexp (first (parse lexemes 0))]
+  (let [[sexp] (parse lexemes 0)]
     (rec_eval env sexp)))
 
 (defn eval_do_body [env sexps]
-  (let [node (first sexps)
+  (let [[node] sexps
         tail (rest sexps)
         [r env2] (rec_eval env node)]
     (if (empty? tail)
@@ -114,24 +121,28 @@
     (vector? sexp) (let [^String name (first sexp)]
                      (case name
                        "do*" (eval_do_body env (rest sexp))
-                       "def*" (let [dname (second sexp)]
+                       "def*" (let [[_ dname] sexp]
                                 (if (= 3 (count sexp))
-                                  [true (register_value env dname (first (rec_eval env (get sexp 2))))]
+                                  (let [value_atom (atom nil)
+                                        env2 (register_def env dname value_atom)
+                                        [value] (rec_eval env2 (get sexp 2))]
+                                    (reset! value_atom value)
+                                    [true env2])
                                   [(scope_contains env dname) env]))
-                       "let*" (let [dname (second sexp)]
+                       "let*" (let [[_ dname] sexp]
                                 [nil (register_value env dname (first (rec_eval env (get sexp 2))))])
                        "if*" (let [[cond env2] (rec_eval env (second sexp))]
                               ;; (println "IF:" cond sexp)
                                (if (as cond boolean)
                                  (rec_eval env2 (get sexp 2))
                                  (rec_eval env2 (get sexp 3))))
-                       "fn*" [(function (fn [args]
-                                          (let [args_names (second sexp)]
-                                            ;; (println "FN*" args_names args env)
-                                            (first
-                                             (eval_do_body
-                                              (merge_args_with_values env args_names args)
-                                              (rest (rest sexp)))))))
+                       "fn*" [(fn [args]
+                                (let [[_ args_names] sexp]
+                                  ;; (println "FN*" args_names args env)
+                                  (first
+                                   (eval_do_body
+                                    (merge_args_with_values env args_names args)
+                                    (rest (rest sexp))))))
                               env]
                        (let [f (as (resolve_value env name) Function)]
                          [(.apply f (eval_arg env (rest sexp))) env])))
