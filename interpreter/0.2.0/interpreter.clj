@@ -45,6 +45,8 @@
      :vector (fn [xs] xs)
      :atom (fn [[x]] (atom x))
      :deref (fn [[x]] (deref x))
+     :concat (fn [[a b]] (concat a b))
+     :rest (fn [[xs]] (rest xs))
      :reset! (fn [[a x]] (reset! a x) x)
      :println (fn [xs] (println (into-array2 (.-class Object) xs)))
      :str (fn [xs] (str (into-array2 (.-class Object) xs)))
@@ -63,7 +65,7 @@
             (get (:scope env) name)
             (if (contains? (:ns env) name)
               (deref (get (:ns env) name))
-              (FIXME name " | SCOPE: " (map (fn [[k]] k) (:scope env)))))))
+              (FIXME "Can't resolve '" name "' from " env)))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
