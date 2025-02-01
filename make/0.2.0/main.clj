@@ -11,20 +11,30 @@
                       (if (some? root-ns)
                         (str " -root_ns " root-ns)
                         ""))
+                    (if (some? (:no_lint r))
+                      " -no_lint true"
+                      "")
                     " -target " target
                     " -src " (:src r) " > " (:target r)
+
                     " || (rm " (:target r) " && exit 1)"))
              rules)]
     (reduce (fn [a x] (str a "\n\n" x)) "" res)))
 
 (defn module-files [files] files)
 
-(defn module [{lang :lang root-ns :root-ns src-dir :src-dir target-dir :target-dir items :items}]
+(defn module [{lang :lang
+               root-ns :root-ns
+               src-dir :src-dir
+               target-dir :target-dir
+               items :items
+               no_lint :no_lint}]
   {:target lang
    :root-ns root-ns
    :rules (map
            (fn [x]
              {:src (str src-dir "/" x ".clj")
+              :no_lint no_lint
               :target (str target-dir "/" x "." lang)})
            items)})
 
