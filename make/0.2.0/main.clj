@@ -43,18 +43,13 @@
    :rules (->>
            (:items params)
            (map
-            (fn [x]
-              {:src (str "vendor/" (:name x) "/" (:version x) "/"
-                         (if (= (:lang params) :java)
-                           (:name x)
-                           "main")
-                         ".clj")
-               :ns (if (= (:lang params) :java) (:name x) nil)
-               :target (str (:target-dir params) "/" (:name x) "/"
-                            (if (= (:lang params) :java)
-                              (:name x)
-                              "main")
-                            "." (:lang params))})))})
+            (fn [{name :name version :version}]
+              (if (= (:lang params) :java)
+                {:src (str "vendor/" name "/" version "/" name ".clj")
+                 :ns name
+                 :target (str (:target-dir params) "/" name "/" name "." (:lang params))}
+                {:src (str "vendor/" name "/" version "/main.clj")
+                 :target (str (:target-dir params) "/" name "/main." (:lang params))}))))})
 
 (defn- make_all_target [xs]
   (reduce
