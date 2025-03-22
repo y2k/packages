@@ -33,12 +33,10 @@
          (.close socket)
          (main_loop state_path eval env_atom server))))))
 
-;; (main eval (cast int (:port config)) env_atom)
-
 (defn main [state_path eval env_atom config]
   (let [init_state (slurp state_path)]
     (if (some? init_state)
-      (update_env eval env_atom init_state))
+      (update_env eval env_atom (str "(\ndo*\n" init_state ")")))
     (let [server_socket (atom nil)]
       (.start
        (Thread.
