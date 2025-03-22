@@ -36,7 +36,8 @@
 (defn main [state_path eval env_atom config]
   (let [init_state (slurp state_path)]
     (if (some? init_state)
-      (update_env eval env_atom (str "(\ndo*\n" init_state ")")))
+      (let [wrapped_state (str "(\ndo*\n" init_state (if (.endsWith init_state "\n") ")" "\n)"))]
+        (update_env eval env_atom wrapped_state)))
     (let [server_socket (atom nil)]
       (.start
        (Thread.
