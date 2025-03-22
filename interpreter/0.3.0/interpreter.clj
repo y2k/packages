@@ -63,7 +63,7 @@
             (get (:scope env) name)
             (if (contains? (:ns env) name)
               (deref (get (:ns env) name))
-              (FIXME name " | SCOPE: " (map (fn [[k]] k) (:scope env)))))))
+              (FIXME "Can't resolve '" name "' | SCOPE: " (map (fn [[k]] k) (:scope env)))))))
 
 (defn- register_value [env name value]
   ;; (println "REGISTER:" name value)
