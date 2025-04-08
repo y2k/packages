@@ -26,16 +26,15 @@
     [(parse_atom (as (get tokens index) String)) (+ index 1)]))
 
 (defn- serialize_to_string [sexp]
+  ;; (eprintln "LOG:serialize_to_string" sexp)
   (cond
     (is sexp String) sexp
     (is sexp Boolean) (if (cast boolean sexp) "true" "false")
     (= sexp nil) "nil"
-    :else (let [body (if (= 1 (count sexp))
-                       (serialize_to_string (first sexp))
-                       (reduce (fn [a x] (str a "\n" (serialize_to_string x)))
-                               (serialize_to_string (first sexp))
-                               (rest sexp)))]
-            (str "(\n" body "\n)"))))
+    :else (let [body (if (= 0 (count sexp))
+                       "\n"
+                       (reduce (fn [a x] (str a "\n" (serialize_to_string x))) "" sexp))]
+            (str "(" body "\n)"))))
 
 ;; Scope
 
