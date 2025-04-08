@@ -5,7 +5,7 @@
              (fn [r]
                (str (:target r) ": " (:src r) "\n"
                     "\t@ mkdir -p $$(dirname " (:target r) ")\n"
-                    "\t@ clj2js compile"
+                    "\t@ OCAMLRUNPARAM=b clj2js compile"
                     (if (some? (:ns r))
                       (str " -root_ns " (:ns r))
                       (if (some? root-ns)
