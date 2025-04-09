@@ -1,4 +1,4 @@
-(ns _ (:import [android.widget LinearLayout Button]
+(ns _ (:import [android.widget LinearLayout Button TextView]
                [android.view View ViewGroup]
                [android.content Context])
     (:require ["../effects/effects" :as e]))
@@ -34,10 +34,16 @@
                                                (.toString v)))
     btn))
 
+(defn- label_ [^Context context {text :text}]
+  (let [view (TextView. context)]
+    (.setText view (cast String text))
+    view))
+
 (defn- button [props]        (fn [w] ((:chat_ui:button w) props)))
 (defn- add    [parent child] (fn [w] ((:chat_ui:add w) parent child)))
 (defn- row    []             (fn [w] ((:chat_ui:row w))))
 (defn- column []             (fn [w] ((:chat_ui:column w))))
+(defn- label  [props]        (fn [w] ((:chat_ui:label w) props)))
 
 ;;
 
@@ -58,6 +64,7 @@
   (let [[name props] ui_desc
         children (drop 2 ui_desc)]
     (case name
+      :label (label props)
       :button (button props)
       :column (fill_container (fn [x] (build_ui x)) (column) children)
       :row (fill_container (fn [x] (build_ui x)) (row) children)
@@ -78,17 +85,14 @@
   (swap! w_atom
          (fn [w]
            (merge w
-                  {:chat_ui:add (fn [parent child]
-                                  [(add_ parent child) nil])
+                  {:chat_ui:add (fn [parent child] [(add_ parent child) nil])
                    :chat_ui:button (fn [props]
                                      [(button_
                                        self
                                        (assoc props :onclick (fn [_] ((:onclick props) (deref w_atom)))))
                                       nil])
-                   :chat_ui:update (fn [v]
-                                     [(add_ root v) nil])
-                   :chat_ui:column (fn []
-                                     [(column_ self) nil])
-                   :chat_ui:row (fn []
-                                  [(row_ self) nil])})))
+                   :chat_ui:label (fn [props] [(label_ self props) nil])
+                   :chat_ui:update (fn [v] [(add_ root v) nil])
+                   :chat_ui:column (fn [] [(column_ self) nil])
+                   :chat_ui:row (fn [] [(row_ self) nil])})))
   w_atom)
