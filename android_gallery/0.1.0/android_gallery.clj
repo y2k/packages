@@ -8,8 +8,7 @@
 
 (defn on_activity_result [^Context self ^int requestCode ^int resultCode ^Intent data]
   (let [cacheDir (.getCacheDir self)
-        temp_file (File. cacheDir "image_f6f76f67f7.jpg")])
-  ;; (eprintln "FIXME:" requestCode resultCode data (.getData data) (.getExtras data) (.length temp_file))
+        temp_file (File. cacheDir "image_fa67e34719fa.jpg")])
   (Uri/fromFile temp_file))
 
 (defn get_image [] (fn [w] ((:android_gallery:get_image w))))
@@ -18,20 +17,11 @@
   (unchecked
    (let [intent (Intent. MediaStore/ACTION_IMAGE_CAPTURE)
          cacheDir (.getCacheDir activity)
-        ;;  temp_file (File/createTempFile "image" ".jpg" cacheDir)
-         temp_file (File. cacheDir "image_f6f76f67f7.jpg")
+         temp_file (File. cacheDir "image_fa67e34719fa.jpg")
          photoUri (FileProvider/getUriForFile  activity "y2k.finance_tracker.fileprovider" temp_file)]
-    ;;  (println "FIXME:" temp_file photoUri)
      (.putExtra intent MediaStore/EXTRA_OUTPUT photoUri)
-    ;;  (.putExtra intent "test_32323" photoUri)
      (.startActivityForResult activity intent 9146235)
      nil)))
-
-;; (defn- get_image_ [^Activity activity]
-;;   (let [intent (Intent. Intent/ACTION_PICK)]
-;;     (.setType intent "image/*")
-;;     (.startActivityForResult activity intent 9146235)
-;;     nil))
 
 (defn attach_effect_handler [^Activity activity env]
   (assoc env :android_gallery:get_image (fn [] [(get_image_ activity) nil])))
