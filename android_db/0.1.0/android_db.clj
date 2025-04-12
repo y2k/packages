@@ -1,7 +1,7 @@
 (ns _ (:import [io.requery.android.database.sqlite SQLiteDatabase]))
 
 (defn query [sql args]
-  (fn [w] ((:android_db:query w) sql args)))
+  (fn [w] ((:android_db:query w) {:sql sql :args args})))
 
 (defn- query_ [db sql args]
   (let [c (.rawQuery (cast SQLiteDatabase db)
@@ -12,4 +12,4 @@
 
 (defn attach_effect_handler [{db_source :db} env]
   (let [^SQLiteDatabase db (SQLiteDatabase/openOrCreateDatabase (cast String db_source) nil)]
-    (assoc env :android_db:query (fn [sql args] (query_ db sql args)))))
+    (assoc env :android_db:query (fn [{sql :sql args :args}] (query_ db sql args)))))

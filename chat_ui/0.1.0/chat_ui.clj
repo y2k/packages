@@ -40,7 +40,7 @@
     view))
 
 (defn- button [props]        (fn [w] ((:chat_ui:button w) props)))
-(defn- add    [parent child] (fn [w] ((:chat_ui:add w) parent child)))
+(defn- add    [parent child] (fn [w] ((:chat_ui:add w) {:parent parent :child child})))
 (defn- row    []             (fn [w] ((:chat_ui:row w))))
 (defn- column []             (fn [w] ((:chat_ui:column w))))
 (defn- label  [props]        (fn [w] ((:chat_ui:label w) props)))
@@ -85,7 +85,7 @@
   (swap! w_atom
          (fn [w]
            (merge w
-                  {:chat_ui:add (fn [parent child] [(add_ parent child) nil])
+                  {:chat_ui:add (fn [{parent :parent child :child}] [(add_ parent child) nil])
                    :chat_ui:button (fn [props]
                                      [(button_
                                        self
