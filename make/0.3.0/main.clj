@@ -15,7 +15,7 @@
        "all: $(OUT_FILES)\n\n"
        "$(OUT_DIR)/%.$(EXT_OUT): $(SRC_DIR)/%.$(EXT_IN)\n"
        "\t@ mkdir -p $(dir $@)\n"
-       "\t~/Projects/language/_build/default/bin/main.exe -log true -target " (:target cfg) " -src $(realpath $<) -root $(realpath " (:root cfg) ") -namespace " (:namespace cfg) " > $@\n"
+       "\t~/Projects/language/_build/default/bin/main.exe -log false -target " (:target cfg) " -src $< -root " (:root cfg) " -namespace " (:namespace cfg) " > $@\n"
       ;;
        )))
    (reduce
