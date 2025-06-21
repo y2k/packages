@@ -89,7 +89,7 @@
                    :chat_ui:button (fn [props]
                                      [(button_
                                        self
-                                       (assoc props :onclick (fn [_] ((:onclick props) (deref w_atom)))))
+                                       (assoc props :onclick (fn [] ((:onclick props) (deref w_atom)))))
                                       nil])
                    :chat_ui:label (fn [props] [(label_ self props) nil])
                    :chat_ui:update (fn [v] [(add_ root v) nil])

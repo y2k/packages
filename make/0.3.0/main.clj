@@ -1,23 +1,32 @@
 (defn generate [rules]
-  (->>
-   rules
-   (map
-    (fn [cfg]
-      (str
-       ;; (:out-dir cfg) "/%." (:target cfg) ": ./%.clj\n"
-       ;; $(OUT_DIR)/%: $(SRC_DIR)/%.clj\n
-       "SRC_DIR := " (:root cfg) "\n"
-       "OUT_DIR := " (:out-dir cfg) "\n"
-       "EXT_IN := clj\n"
-       "EXT_OUT := " (:target cfg) "\n"
-       "SRC_FILES := $(shell find -L $(SRC_DIR) -type f -name '*.$(EXT_IN)')\n"
-       "OUT_FILES := $(patsubst $(SRC_DIR)/%.$(EXT_IN),$(OUT_DIR)/%.$(EXT_OUT),$(SRC_FILES))\n\n"
-       "all: $(OUT_FILES)\n\n"
-       "$(OUT_DIR)/%.$(EXT_OUT): $(SRC_DIR)/%.$(EXT_IN)\n"
-       "\t@ mkdir -p $(dir $@)\n"
-       "\t~/Projects/language/_build/default/bin/main.exe -log false -target " (:target cfg) " -src $< -root " (:root cfg) " -namespace " (:namespace cfg) " > $@\n"
-      ;;
-       )))
-   (reduce
-    (fn [a x] (str a x))
-    "# GENERATED FILE - DO NOT EDIT\n\n")))
+  (let [items
+        (map
+         (fn [cfg]
+           (let [id (str "_" (gensym))]
+             {:id id
+              :content
+              (if (= (:target cfg) "eval")
+                (str
+                 "\n" id ": " (:out cfg) "\n\n"
+                 (:out cfg) ": " (:src cfg) "\n"
+                 "\t@ mkdir -p $(dir " (:out cfg) ")\n"
+                 "\t~/Projects/language/_build/default/bin/main.exe -log " (or (:log cfg) false) " -target eval -src $< > $@\n")
+                (str
+                 "SRC_DIR" id " := " (:root cfg) "\n"
+                 "OUT_DIR" id " := " (:out-dir cfg) "\n"
+                 "EXT_IN" id " := clj\n"
+                 "EXT_OUT" id " := " (:target cfg) "\n"
+                 "SRC_FILES" id " := $(shell find -L $(SRC_DIR" id ") -type f -name '*.$(EXT_IN" id ")')\n"
+                 "OUT_FILES" id " := $(patsubst $(SRC_DIR" id ")/%.$(EXT_IN" id "),$(OUT_DIR" id ")/%.$(EXT_OUT" id "),$(SRC_FILES" id "))\n\n"
+                 id ": $(OUT_FILES" id ")\n\n"
+                 "$(OUT_DIR" id ")/%.$(EXT_OUT" id "): $(SRC_DIR" id ")/%.$(EXT_IN" id ")\n"
+                 "\t@ mkdir -p $(dir $@)\n"
+                 "\t~/Projects/language/_build/default/bin/main.exe -log " (or (:log cfg) false) " -target " (:target cfg) " -src $< -root " (:root cfg) " -namespace " (:namespace cfg) " > $@\n"))}))
+         rules)]
+    (reduce
+     (fn [a x] (str a (:content x)))
+     (str
+      "# GENERATED FILE - DO NOT EDIT\n\n"
+      (reduce (fn [a x] (str a " " (:id x))) "all:" items)
+      "\n\n")
+     items)))

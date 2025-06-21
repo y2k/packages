@@ -8,8 +8,8 @@
 
 (defn on_activity_result [^Context self ^int requestCode ^int resultCode ^Intent data]
   (let [cacheDir (.getCacheDir self)
-        temp_file (File. cacheDir "image_fa67e34719fa.jpg")])
-  (Uri/fromFile temp_file))
+        temp_file (File. cacheDir "image_fa67e34719fa.jpg")]
+    (Uri/fromFile temp_file)))
 
 (defn get_image [] (fn [w] ((:android_gallery:get_image w))))
 
