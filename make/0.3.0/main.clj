@@ -10,7 +10,7 @@
                  "\n" id ": " (:out cfg) "\n\n"
                  (:out cfg) ": " (:src cfg) "\n"
                  "\t@ mkdir -p $(dir " (:out cfg) ")\n"
-                 "\t~/Projects/language/_build/default/bin/main.exe -log " (or (:log cfg) false) " -target eval -src $< > $@\n")
+                 "\tly2k -log " (or (:log cfg) false) " -target eval -src $< > $@\n\n")
                 (str
                  "SRC_DIR" id " := " (:root cfg) "\n"
                  "OUT_DIR" id " := " (:out-dir cfg) "\n"
@@ -21,12 +21,12 @@
                  id ": $(OUT_FILES" id ")\n\n"
                  "$(OUT_DIR" id ")/%.$(EXT_OUT" id "): $(SRC_DIR" id ")/%.$(EXT_IN" id ")\n"
                  "\t@ mkdir -p $(dir $@)\n"
-                 "\t~/Projects/language/_build/default/bin/main.exe -log " (or (:log cfg) false) " -target " (:target cfg) " -src $< -root " (:root cfg) " -namespace " (:namespace cfg) " > $@\n"))}))
+                 "\tly2k -log " (or (:log cfg) false) " -target " (:target cfg) " -src $< -root " (:root cfg) " -namespace " (:namespace cfg) " > $@\n\n"))}))
          rules)]
     (reduce
      (fn [a x] (str a (:content x)))
      (str
       "# GENERATED FILE - DO NOT EDIT\n\n"
       (reduce (fn [a x] (str a " " (:id x))) "all:" items)
-      "\n\n")
+      "\n")
      items)))
