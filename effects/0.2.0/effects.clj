@@ -2,6 +2,10 @@
 
 (defn pure [x] (fn [_] [x nil]))
 
+(defn thunk [f]
+  (fn [_]
+    [(f) nil]))
+
 (defn then [effect f]
   (fn [w]
     (let [[r err] (effect w)]
@@ -21,8 +25,8 @@
         (fn [tr]
           (pure (concat [hr] tr))))))))
 
-(defn thunk [name args f]
-  (fn [w]
-    (let [eh (:thunk w)]
-      (if (nil? eh) (FIXME "No effect handler for :" name))
-      (eh [name args] f))))
+;; (defn thunk [name args f]
+;;   (fn [w]
+;;     (let [eh (:thunk w)]
+;;       (if (nil? eh) (FIXME "No effect handler for :" name))
+;;       (eh [name args] f))))
