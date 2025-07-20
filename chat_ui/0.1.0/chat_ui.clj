@@ -1,14 +1,27 @@
-(ns _ (:import [android.widget LinearLayout Button TextView]
+(ns _ (:import [android.widget LinearLayout Button TextView ScrollView]
                [android.view View ViewGroup]
                [android.content Context])
     (:require ["../effects/effects" :as e]))
 
 (defn ^View root_ [^Context context]
-  (let [ll (LinearLayout. context)]
-    (.setOrientation ll 1)
-    (.setGravity ll 80)
+  (let [scroll (ScrollView. context)
+        ll (LinearLayout. context)]
     (.setPadding ll 0 0 0 150)
-    ll))
+    (.setGravity ll 80)
+    (.setOrientation ll 1)
+    ;; (.setGravity scroll 80)
+    ;; (.setScaleY scroll -1)
+    ;; (.setScaleY ll -1)
+    (.addView scroll ll)
+    (.setFillViewport scroll true)
+    scroll))
+
+;; (defn ^View root_ [^Context context]
+;;   (let [ll (LinearLayout. context)]
+;;     (.setOrientation ll 1)
+;;     (.setGravity ll 80)
+;;     (.setPadding ll 0 0 0 150)
+;;     ll))
 
 (defn- ^View column_ [^Context context]
   (let [ll (LinearLayout. context)]
@@ -37,6 +50,8 @@
 (defn- label_ [^Context context {text :text}]
   (let [view (TextView. context)]
     (.setText view (cast String text))
+    (.setTextSize view 20)
+    (.setGravity view 17) ;; Gravity.CENTER
     view))
 
 (defn- button [props]        (fn [w] ((:chat_ui:button w) props)))
@@ -81,18 +96,25 @@
 
 ;;
 
-(defn add_effect_handlers [^Context self root w_atom]
-  (swap! w_atom
-         (fn [w]
-           (merge w
-                  {:chat_ui:add (fn [{parent :parent child :child}] [(add_ parent child) nil])
-                   :chat_ui:button (fn [props]
-                                     [(button_
-                                       self
-                                       (assoc props :onclick (fn [] ((:onclick props) (deref w_atom)))))
-                                      nil])
-                   :chat_ui:label (fn [props] [(label_ self props) nil])
-                   :chat_ui:update (fn [v] [(add_ root v) nil])
-                   :chat_ui:column (fn [] [(column_ self) nil])
-                   :chat_ui:row (fn [] [(row_ self) nil])})))
-  w_atom)
+(defn- update_impl [root v]
+  (let [result (add_ root v)
+        scroll (cast ScrollView (.getParent (cast ViewGroup root)))]
+    (.post scroll ^Runnable:void (fn [] (.fullScroll scroll 130))) ;; FOCUS_DOWN
+    result))
+
+(defn add_effect_handlers [^Context self root2 w_atom]
+  (let [root (.getChildAt (cast ViewGroup root2) 0)]
+    (swap! w_atom
+           (fn [w]
+             (merge w
+                    {:chat_ui:add (fn [{parent :parent child :child}] [(add_ parent child) nil])
+                     :chat_ui:button (fn [props]
+                                       [(button_
+                                         self
+                                         (assoc props :onclick (fn [] ((:onclick props) (deref w_atom)))))
+                                        nil])
+                     :chat_ui:label (fn [props] [(label_ self props) nil])
+                     :chat_ui:update (fn [v] [(update_impl root v) nil])
+                     :chat_ui:column (fn [] [(column_ self) nil])
+                     :chat_ui:row (fn [] [(row_ self) nil])})))
+    w_atom))
