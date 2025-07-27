@@ -42,7 +42,8 @@
         a
         "\t@ ln -s $(LY2K_PACKAGES_DIR)/" name "/" ver " " (:out-dir config) "/" name "\n"))
      (str ".PHONY: restore\nrestore:\n\t@ rm -rf " (:out-dir config) "\n\t@ mkdir -p " (:out-dir config) "\n")
-     (:deps config))))
+     (:deps config))
+    ""))
 
 (defn build [config]
   (str
