@@ -1,3 +1,5 @@
+;; Version: 0.3.0
+
 (defn generate [rules]
   (let [items
         (map
@@ -30,3 +32,19 @@
       (reduce (fn [a x] (str a " " (:id x))) "all:" items)
       "\n")
      items)))
+
+(defn- make_deps [config]
+  (if (some? config)
+    (reduce
+     (fn [a x]
+       (let [[name ver] (string/split x ":")])
+       (str
+        a
+        "\t@ ln -s $(LY2K_PACKAGES_DIR)/" name "/" ver " " (:out-dir config) "/" name "\n"))
+     (str ".PHONY: restore\nrestore:\n\t@ rm -rf " (:out-dir config) "\n\t@ mkdir -p " (:out-dir config) "\n")
+     (:deps config))))
+
+(defn build [config]
+  (str
+   (generate (:compile config))
+   (make_deps (:deps config))))
