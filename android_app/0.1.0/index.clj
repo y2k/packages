@@ -22,6 +22,17 @@
   (let [root (cast View (ui/root_ self))
         w_atom (.-w_atom self)]
     (.setContentView self root)
+
+    (.setOnApplyWindowInsetsListener
+     root
+     ^android.view.View.OnApplyWindowInsetsListener
+     (fn [view insets]
+       (let [systemBar (.getInsets insets (android.view.WindowInsets.Type.systemBars))]
+         (.setPadding
+          root
+          (.-left systemBar) (.-top systemBar) (.-right systemBar) (.-bottom systemBar))
+         insets)))
+
     (ui/add_effect_handlers self root w_atom)
     (m/main :on-create
             {:context self

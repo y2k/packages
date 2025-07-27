@@ -1,3 +1,5 @@
+;; Version 0.2.0
+
 (ns _ (:import [android.widget LinearLayout Button TextView ScrollView]
                [android.view View ViewGroup]
                [android.content Context])
@@ -6,22 +8,11 @@
 (defn ^View root_ [^Context context]
   (let [scroll (ScrollView. context)
         ll (LinearLayout. context)]
-    ;; (.setPadding ll 0 0 0 150)
     (.setGravity ll 80)
     (.setOrientation ll 1)
-    ;; (.setGravity scroll 80)
-    ;; (.setScaleY scroll -1)
-    ;; (.setScaleY ll -1)
     (.addView scroll ll)
     (.setFillViewport scroll true)
     scroll))
-
-;; (defn ^View root_ [^Context context]
-;;   (let [ll (LinearLayout. context)]
-;;     (.setOrientation ll 1)
-;;     (.setGravity ll 80)
-;;     (.setPadding ll 0 0 0 150)
-;;     ll))
 
 (defn- ^View column_ [^Context context]
   (let [ll (LinearLayout. context)]
@@ -32,10 +23,6 @@
   (let [ll (LinearLayout. context)]
     (.setGravity ll 8388613)
     ll))
-
-(defn- add_ [parent child]
-  (.addView (cast ViewGroup parent) (cast View child))
-  parent)
 
 (defn- button_ [^Context context {title :title onclick :onclick}]
   (let [btn (Button. context)]
@@ -75,9 +62,11 @@
             children))
       (fn [_] (e/pure container))))))
 
-(defn- build_ui [ui_desc]
-  (let [[name props] ui_desc
-        children (drop 2 ui_desc)]
+;;
+
+(defn- build_ui [vui]
+  (let [[name props] vui
+        children (drop 2 vui)]
     (case name
       :label (label props)
       :button (button props)
@@ -85,36 +74,41 @@
       :row (fill_container (fn [x] (build_ui x)) (row) children)
       (FIXME "Unknown UI component: " name))))
 
-;;
+(defn- add_ [parent child]
+  (.addView (cast ViewGroup parent) (cast View child))
+  parent)
 
-(defn- update_ [v] (fn [w] ((:chat_ui:update w) v)))
-
-(defn update_ui [vui]
-  (e/then
-   (build_ui vui)
-   (fn [v] (update_ v))))
-
-;;
-
-(defn- update_impl [root v]
-  (let [result (add_ root v)
+(defn- update_impl [w ^ViewGroup root vui clear]
+  (if clear
+    (do (.removeAllViews root) nil))
+  (let [v (first ((build_ui vui) w))
+        result (add_ root v)
         scroll (cast ScrollView (.getParent (cast ViewGroup root)))]
     (.post scroll ^Runnable:void (fn [] (.fullScroll scroll 130))) ;; FOCUS_DOWN
     result))
+
+;;
+
+;; DEPRECATED
+(defn update_ui [vui] (fn [w] ((:chat_ui:append w) vui)))
+
+(defn replace [vui] (fn [w] ((:chat_ui:replace w) vui)))
+(defn append [vui] (fn [w] ((:chat_ui:append w) vui)))
 
 (defn add_effect_handlers [^Context self root2 w_atom]
   (let [root (.getChildAt (cast ViewGroup root2) 0)]
     (swap! w_atom
            (fn [w]
              (merge w
-                    {:chat_ui:add (fn [{parent :parent child :child}] [(add_ parent child) nil])
+                    {:chat_ui:replace (fn [vui] [(update_impl (deref w_atom) root vui true) nil])
+                     :chat_ui:append (fn [vui] [(update_impl (deref w_atom) root vui false) nil])
+                     :chat_ui:add (fn [{parent :parent child :child}] [(add_ parent child) nil])
                      :chat_ui:button (fn [props]
                                        [(button_
                                          self
                                          (assoc props :onclick (fn [] ((:onclick props) (deref w_atom)))))
                                         nil])
                      :chat_ui:label (fn [props] [(label_ self props) nil])
-                     :chat_ui:update (fn [v] [(update_impl root v) nil])
                      :chat_ui:column (fn [] [(column_ self) nil])
                      :chat_ui:row (fn [] [(row_ self) nil])})))
     w_atom))
