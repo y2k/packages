@@ -1,4 +1,4 @@
-(ns _)
+(ns effects)
 
 (defn pure [x] (fn [_] [x nil]))
 

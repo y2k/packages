@@ -1,3 +1,5 @@
+(ns chat_ui)
+
 ;; Version 0.2.0
 
 (ns _ (:import [android.widget LinearLayout Button TextView ScrollView]
