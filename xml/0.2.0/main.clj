@@ -1,3 +1,5 @@
+(ns xml)
+
 (defn- attrs_to_string [attrs]
   (reduce
    (fn [acc [k v]]
