@@ -62,7 +62,7 @@
                  "\t@ mkdir -p $(dir $@)\n"
                  "\tly2k"
                  " -log " (or (:log cfg) false)
-                 (if (= (:target cfg) "js") (str " -prelude_path ./prelude.js") "")
+                 (if (= (:target cfg) "js") (str " -prelude_path $$PWD/" (:prelude-path cfg)) "")
                  " -target " (:target cfg)
                  " -src $<"
                  " -namespace " (:namespace cfg)
