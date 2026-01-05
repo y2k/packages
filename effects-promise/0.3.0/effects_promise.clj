@@ -4,6 +4,10 @@
   (fn [_]
     (Promise/resolve x)))
 
+(defn thunk [promise]
+  (fn [_]
+    promise))
+
 (defn then [fx f]
   (fn [ctx]
     (-> (fx ctx)
