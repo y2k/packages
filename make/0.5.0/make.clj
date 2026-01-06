@@ -45,7 +45,7 @@
   (let [target (:target cfg)
         prelude-opt (if (= target "js") (str " -prelude_path $$PWD/" (:prelude-path cfg)) "")]
     (str "# [FILE: " (:root cfg) "]\n\n"
-         (make-pattern-rule-vars id (:root cfg) (:out-dir cfg) target)
+         (make-pattern-rule-vars id (:root cfg) (:out-dir cfg) (or (:extension cfg) target))
          "\n"
          (make-pattern-rule id (or (:log cfg) false) target (:namespace cfg) prelude-opt))))
 
