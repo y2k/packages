@@ -20,6 +20,7 @@
        "\tly2k -log " log-enabled?
        prelude-opt
        " -target " target
+       " -output $@"
        " -src $< -namespace " namespace
        " > $@\n\n"))
 
@@ -46,7 +47,7 @@
         prelude-opt (if (= target "js") (str " -prelude_path $$PWD/" (:prelude-path cfg)) "")]
     (str "# [FILE: " (:root cfg) "]\n\n"
          (make-pattern-rule-vars id (:root cfg) (:out-dir cfg) (or (:extension cfg) target))
-         "\n"
+         "\n\n"
          (make-pattern-rule id (or (:log cfg) false) target (:namespace cfg) prelude-opt))))
 
 (defn- generate-rule [cfg]
