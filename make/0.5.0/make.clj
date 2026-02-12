@@ -27,7 +27,7 @@
 (defn- generate-dep-rule [id cfg]
   (let [src-dir (str "$(LY2K_PACKAGES_DIR)/" (:name cfg) "/" (:version cfg))
         target (:compile_target cfg)
-        prelude-opt (if (= target "js") " -prelude_path ./prelude.js" "")]
+        prelude-opt (if (= target "js") (str " -prelude_path $$PWD/" (:prelude-path cfg)) "")]
     (str "# [DEPENDENCY: " (:name cfg) ":" (:version cfg) "]\n\n"
          (make-pattern-rule-vars id src-dir (:out-dir cfg) target)
          "\n"
