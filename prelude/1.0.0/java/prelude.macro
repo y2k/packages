@@ -1,10 +1,10 @@
 (ns prelude)
 
 ;; Prelude macros for java_v2 backend
-;; Key difference: uses direct static method calls instead of y2k.RT.invoke
+;; Key difference: uses direct static method calls instead of y2k.prelude.invoke
 
 (defn macro_update [m k f]
-  (list 'y2k.prelude_java_v2.update m k f))
+  (list 'y2k.prelude.update m k f))
 
 (defn macro_assert [a b]
   (list '= a b))
@@ -49,7 +49,7 @@
 (defn macro_declare [x] (list 'do))
 
 (defn macro_boolean [x]
-  (list 'y2k.RT.toBoolean x))
+  (list 'y2k.prelude.toBoolean x))
 
 (defn macro_unixtime []
   (list '/ (list '.getTime (list 'java.util.Date.)) 1000.0))
@@ -57,25 +57,25 @@
 (defn list [& xs] xs)
 
 (defn macro_conj [xs x]
-  (list 'y2k.RT.conj xs x))
+  (list 'y2k.prelude.conj xs x))
 
 (defn macro_map [f xs]
-  (list 'y2k.RT.map f xs))
+  (list 'y2k.prelude.map f xs))
 
 (defn macro_filter [f xs]
-  (list 'y2k.RT.filter f xs))
+  (list 'y2k.prelude.filter f xs))
 
 (defn macro_hash-map-from [xs]
-  (list 'y2k.RT.hash_map_from xs))
+  (list 'y2k.prelude.hash_map_from xs))
 
 (defn macro_eprintln [& xs]
-  (concat (list 'y2k.RT.eprintln) xs))
+  (concat (list 'y2k.prelude.eprintln) xs))
 
 (defn macro_inc [x]
-  (list 'y2k.prelude_java_v2.inc x))
+  (list 'y2k.prelude.inc x))
 
 (defn macro_FIXME [& xs]
-  (list 'y2k.prelude_java_v2.fixme
+  (list 'prelude.fixme
         '__LOC__
         (concat (list 'vector) xs)))
 
@@ -91,14 +91,14 @@
      (list '.subList xs_var 1 (list '.size xs_var)))))
 
 (defn macro_concat [& xs]
-  (concat (list 'y2k.RT.concat)
+  (concat (list 'y2k.prelude.concat)
           xs))
 
 (defn macro_merge [m1 m2]
-  (list 'y2k.RT.merge m1 m2))
+  (list 'y2k.prelude.merge m1 m2))
 
 (defn macro_drop [n xs]
-  (list 'y2k.RT.drop n xs))
+  (list 'y2k.prelude.drop n xs))
 
 (defn macro_first [xs]
   (list 'get xs 0))
@@ -116,10 +116,10 @@
   (list '= 'nil x))
 
 (defn macro_into-array2 [class col]
-  (list 'y2k.RT.into_array class col))
+  (list 'y2k.prelude.into_array class col))
 
 (defn macro_assoc [xs k v]
-  (list 'y2k.RT.assoc xs k v))
+  (list 'prelude.assoc xs k v))
 
 (defn macro_atom [x]
   (list 'java.util.concurrent.atomic.AtomicReference. x))
@@ -153,7 +153,7 @@
 
 (defn macro_hash-map [& xs]
   (concat
-   (list 'y2k.RT.hash_map)
+   (list 'y2k.prelude.hash_map)
    xs))
 
 (defn macro_count [xs]
@@ -170,7 +170,7 @@
      (list '. (list 'cast 'java.util.Collection vxs) 'size)))))
 
 (defn macro_get [xs k]
-  (list 'y2k.prelude_java_v2.get xs k))
+  (list 'y2k.prelude.get xs k))
 
 (defn macro_str [& xs]
   (concat
@@ -189,13 +189,13 @@
   (list 'do
         (list 'System.out.println
               (concat (list 'str) xs))
-        (list 'y2k.RT.nop)))
+        (list 'y2k.prelude.nop)))
 
 (defn macro_eprintln [& xs]
   (list 'do
         (list 'System.err.println
               (concat (list 'str) xs))
-        (list 'y2k.RT.nop)))
+        (list 'y2k.prelude.nop)))
 
 ;; Regex
 
@@ -203,12 +203,12 @@
   (list 'java.util.regex.Pattern.compile x))
 
 (defn macro_re-find [p i]
-  (list 'y2k.RT.re_find p i))
+  (list 'y2k.prelude.re_find p i))
 
 ;; Collections
 
 (defn macro_vec [xs]
-  (list 'y2k.RT.vec xs))
+  (list 'y2k.prelude.vec xs))
 
 (defn macro_list [& xs]
   (concat
@@ -221,7 +221,7 @@
    xs))
 
 (defn macro_reduce [f init xs]
-  (list 'y2k.RT.reduce f init xs))
+  (list 'y2k.prelude.reduce f init xs))
 
 (defn macro_second [xs]
   (list 'get xs 1))
@@ -230,13 +230,13 @@
   (list 'instance? 'java.util.List xs))
 
 (defn macro_contains? [m k]
-  (list 'y2k.RT.contains m k))
+  (list 'y2k.prelude.contains m k))
 
 (defn macro_shuffle [seed xs]
-  (list 'y2k.RT.shuffle seed xs))
+  (list 'y2k.prelude.shuffle seed xs))
 
 (defn macro_take [n xs]
-  (list 'y2k.RT.take n xs))
+  (list 'y2k.prelude.take n xs))
 
 (defn macro_apply [f xs]
-  (list 'y2k.RT.apply f xs))
+  (list 'y2k.prelude.apply f xs))
