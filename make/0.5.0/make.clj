@@ -67,3 +67,46 @@
 (defn build [config]
   (str "# GENERATED FILE - DO NOT EDIT"
        (generate (:rules config))))
+
+;; Simple
+
+(defn- dep [name version dir prelude target]
+  {:target "dep"
+   :name name
+   :version version
+   :compile_target target
+   :out-dir dir
+   :prelude-path prelude})
+
+(defn build-simple [opts]
+  (let [out (get opts :out)
+        target (get opts :target)
+        deps (get opts :deps [])
+        out-src (str out "/src")
+        out-test (str out "/test")
+        prelude (str out-src "/prelude." target)
+        dep-rules (mapcat (fn [[name version]]
+                            [(dep name version out-src prelude target)
+                             (dep name version out-test prelude target)])
+                          deps)]
+    (build
+     {:rules
+      (vec (concat
+            [{:target "dep"
+              :name "prelude"
+              :version (str "1.0.0/" target)
+              :compile_target target
+              :out-dir out-src}]
+            dep-rules
+            [{:target target
+              :root "src"
+              :prelude-path prelude
+              :out-dir out-src}
+             {:target target
+              :root "src"
+              :prelude-path prelude
+              :out-dir out-test}
+             {:target target
+              :root "test"
+              :prelude-path prelude
+              :out-dir out-test}]))})))
