@@ -1,26 +1,22 @@
-(ns effects-promise)
+(ns effect)
 
 (defn pure [x]
   (fn [_]
     (Promise/resolve x)))
 
-(defn promise [promise-factory]
+(defn thunk [promise-factory]
   (fn [_]
     (promise-factory)))
-
-(defn thunk [promise]
-  (fn [_]
-    promise))
-
-(defn recover [fx f]
-  (fn [ctx]
-    (-> (fx ctx)
-        (.catch (fn [err] ((f err) ctx))))))
 
 (defn then [fx f]
   (fn [ctx]
     (-> (fx ctx)
         (.then (fn [x] ((f x) ctx))))))
+
+(defn recover [fx f]
+  (fn [ctx]
+    (-> (fx ctx)
+        (.catch (fn [err] ((f err) ctx))))))
 
 (defn batch [effects]
   (fn [ctx]
