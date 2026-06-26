@@ -11,26 +11,23 @@ function valueText(value) {
 }
 
 function strText(value) {
-  if (
-    typeof value === "string" &&
-    value.length >= 2 &&
-    value[0] === '"' &&
-    value[value.length - 1] === '"'
-  ) {
-    return value.slice(1, -1);
-  }
   return valueText(value);
-}
-
-export function symbol(name) {
-  return name;
 }
 
 export function list(...items) {
   return items;
 }
 
-export function hashMap(...items) {
+export function concat(...collections) {
+  const result = [];
+  for (const collection of collections) {
+    if (!Array.isArray(collection)) throw new Error("concat expects lists");
+    result.push(...collection);
+  }
+  return result;
+}
+
+export function hash_map(...items) {
   if (items.length % 2 !== 0) {
     throw new Error("hash-map arguments must be key/value pairs");
   }
@@ -52,12 +49,38 @@ export function truthy(value) {
   );
 }
 
-export function printResult(value) {
+export function print_result(value) {
   console.log(valueText(value));
+}
+
+export function println(...items) {
+  console.log(items.map(strText).join(" "));
+}
+
+export function eprintln(...items) {
+  console.error(items.map(strText).join(" "));
 }
 
 export function str(...items) {
   return items.map(strText).join("");
+}
+
+export function _PLUS_(...items) {
+  return items.reduce((sum, item) => sum + item, 0);
+}
+
+export function _MINUS_(...items) {
+  if (items.length === 0) throw new Error("- expects at least one number");
+  return items.slice(1).reduce((result, item) => result - item, items[0]);
+}
+
+export function _STAR_(...items) {
+  return items.reduce((result, item) => result * item, 1);
+}
+
+export function _SLASH_(...items) {
+  if (items.length === 0) throw new Error("/ expects at least one number");
+  return items.slice(1).reduce((result, item) => Math.trunc(result / item), items[0]);
 }
 
 export function count(collection) {
