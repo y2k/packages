@@ -106,6 +106,10 @@ export function map(fn, list) {
   return list.map((item) => fn(item));
 }
 
+export function drop(count, list) {
+  return list.slice(Math.max(0, count));
+}
+
 export function reduce(fn, init, list) {
   const hasInit = arguments.length === 3;
   if (!hasInit) list = init;

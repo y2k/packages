@@ -153,6 +153,12 @@ public final class language_runtime {
     return result;
   }
 
+  public static java.util.List<Object> drop(Object count, Object collection) {
+    var items = (java.util.List<?>) collection;
+    int start = Math.min(Math.max(((Number) count).intValue(), 0), items.size());
+    return new java.util.ArrayList<Object>(items.subList(start, items.size()));
+  }
+
   public static Object reduce(Object fn, Object collection) throws Exception {
     if (!(collection instanceof java.util.List<?> items)) {
       throw new RuntimeException("reduce expects a function and a list");
