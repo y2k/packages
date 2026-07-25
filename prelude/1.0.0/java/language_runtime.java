@@ -17,6 +17,16 @@ public final class language_runtime {
     Object call(Object a, Object b) throws Exception;
   }
 
+  @FunctionalInterface
+  public interface Fn3 {
+    Object call(Object a, Object b, Object c) throws Exception;
+  }
+
+  @FunctionalInterface
+  public interface Fn4 {
+    Object call(Object a, Object b, Object c, Object d) throws Exception;
+  }
+
   public static java.util.List<Object> list(Object... items) {
     return java.util.Arrays.asList(items);
   }
@@ -145,6 +155,14 @@ public final class language_runtime {
       expect_args("function", args, 2);
       return callable.call(args[0], args[1]);
     }
+    if (fn instanceof Fn3 callable) {
+      expect_args("function", args, 3);
+      return callable.call(args[0], args[1], args[2]);
+    }
+    if (fn instanceof Fn4 callable) {
+      expect_args("function", args, 4);
+      return callable.call(args[0], args[1], args[2], args[3]);
+    }
     throw new RuntimeException("value is not a function");
   }
 
@@ -170,7 +188,8 @@ public final class language_runtime {
       }
       return "{" + String.join(" ", items) + "}";
     }
-    if (value instanceof Fn0 || value instanceof Fn1 || value instanceof Fn2)
+    if (value instanceof Fn0 || value instanceof Fn1 || value instanceof Fn2 || value instanceof Fn3
+        || value instanceof Fn4)
       return "#<function>";
     return String.valueOf(value);
   }
