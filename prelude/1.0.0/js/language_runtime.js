@@ -18,6 +18,10 @@ export function list(...items) {
   return items;
 }
 
+export function vector_QMARK_(value) {
+  return Array.isArray(value);
+}
+
 export function concat(...collections) {
   const result = [];
   for (const collection of collections) {
@@ -37,6 +41,12 @@ export function hash_map(...items) {
     result[valueText(items[i])] = items[i + 1];
   }
   return result;
+}
+
+export function get(collection, key) {
+  if (Array.isArray(collection)) return Number.isInteger(key) && key >= 0 ? collection[key] ?? null : null;
+  if (collection !== null && typeof collection === "object") return collection[valueText(key)] ?? null;
+  throw new Error("get expects a hash-map/list and a key/index");
 }
 
 export function truthy(value) {
@@ -96,8 +106,12 @@ export function map(fn, list) {
   return list.map((item) => fn(item));
 }
 
-export function reduce(fn, list) {
+export function reduce(fn, init, list) {
+  const hasInit = arguments.length === 3;
+  if (!hasInit) list = init;
   if (!Array.isArray(list)) throw new Error("reduce expects a function and a list");
-  if (list.length === 0) throw new Error("reduce expects a non-empty list");
-  return list.reduce((acc, item) => fn(acc, item));
+  if (!hasInit && list.length === 0) throw new Error("reduce expects a non-empty list");
+  return hasInit
+    ? list.reduce((acc, item) => fn(acc, item), init)
+    : list.reduce((acc, item) => fn(acc, item));
 }

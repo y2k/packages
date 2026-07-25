@@ -27,8 +27,22 @@ public final class language_runtime {
     Object call(Object a, Object b, Object c, Object d) throws Exception;
   }
 
+  public static RuntimeException sneaky_throw(Throwable throwable) {
+    language_runtime.<RuntimeException>sneaky_throw_unchecked(throwable);
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Throwable> void sneaky_throw_unchecked(Throwable throwable) throws T {
+    throw (T) throwable;
+  }
+
   public static java.util.List<Object> list(Object... items) {
     return java.util.Arrays.asList(items);
+  }
+
+  public static Boolean vector_QMARK_(Object value) {
+    return value instanceof java.util.List<?>;
   }
 
   public static java.util.List<Object> concat(Object... collections) {
@@ -50,6 +64,16 @@ public final class language_runtime {
       result.put(value_text(items[i]), items[i + 1]);
     }
     return result;
+  }
+
+  public static Object get(Object collection, Object key) {
+    if (collection instanceof java.util.List<?> items && key instanceof Number index) {
+      int i = index.intValue();
+      return i >= 0 && i < items.size() ? items.get(i) : null;
+    }
+    if (collection instanceof java.util.Map<?, ?> items)
+      return items.get(value_text(key));
+    throw new RuntimeException("get expects a hash-map/list and a key/index");
   }
 
   public static boolean truthy(Object value) {
@@ -139,6 +163,16 @@ public final class language_runtime {
     Object acc = items.get(0);
     for (int i = 1; i < items.size(); i++)
       acc = call_fn(fn, acc, items.get(i));
+    return acc;
+  }
+
+  public static Object reduce(Object fn, Object init, Object collection) throws Exception {
+    if (!(collection instanceof java.util.List<?> items)) {
+      throw new RuntimeException("reduce expects a function and a list");
+    }
+    Object acc = init;
+    for (Object item : items)
+      acc = call_fn(fn, acc, item);
     return acc;
   }
 
