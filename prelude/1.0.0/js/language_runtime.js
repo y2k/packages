@@ -22,6 +22,10 @@ export function vector_QMARK_(value) {
   return Array.isArray(value);
 }
 
+export function _EQ_(left, right) {
+  return Object.is(left, right);
+}
+
 export function concat(...collections) {
   const result = [];
   for (const collection of collections) {

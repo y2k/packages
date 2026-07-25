@@ -45,6 +45,10 @@ public final class language_runtime {
     return value instanceof java.util.List<?>;
   }
 
+  public static Boolean _EQ_(Object left, Object right) {
+    return java.util.Objects.equals(left, right);
+  }
+
   public static java.util.List<Object> concat(Object... collections) {
     var result = new java.util.ArrayList<Object>();
     for (Object collection : collections) {
