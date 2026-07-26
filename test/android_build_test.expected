@@ -1,0 +1,12 @@
+dependencies {
+}
+--
+dependencies {
+    implementation('example:one:1.0')
+}
+--
+dependencies {
+    implementation('example:one:1.0')
+    implementation('example:two:2.0')
+}
+<eof>
