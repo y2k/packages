@@ -49,6 +49,22 @@ public final class language_runtime {
     return java.util.Objects.equals(left, right);
   }
 
+  public static Boolean _GT_(Object left, Object right) {
+    return ((Number) left).intValue() > ((Number) right).intValue();
+  }
+
+  public static Boolean _LT_(Object left, Object right) {
+    return ((Number) left).intValue() < ((Number) right).intValue();
+  }
+
+  public static Boolean _GT__EQ_(Object left, Object right) {
+    return ((Number) left).intValue() >= ((Number) right).intValue();
+  }
+
+  public static Boolean _LT__EQ_(Object left, Object right) {
+    return ((Number) left).intValue() <= ((Number) right).intValue();
+  }
+
   public static java.util.List<Object> concat(Object... collections) {
     var result = new java.util.ArrayList<Object>();
     for (Object collection : collections) {

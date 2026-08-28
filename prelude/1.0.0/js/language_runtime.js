@@ -26,6 +26,22 @@ export function _EQ_(left, right) {
   return Object.is(left, right);
 }
 
+export function _GT_(left, right) {
+  return left > right;
+}
+
+export function _LT_(left, right) {
+  return left < right;
+}
+
+export function _GT__EQ_(left, right) {
+  return left >= right;
+}
+
+export function _LT__EQ_(left, right) {
+  return left <= right;
+}
+
 export function concat(...collections) {
   const result = [];
   for (const collection of collections) {
