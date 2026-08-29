@@ -100,6 +100,10 @@ public final class language_runtime {
     return !(value == null || Boolean.FALSE.equals(value) || "false".equals(value) || "nil".equals(value));
   }
 
+  public static Boolean not(Object value) {
+    return !truthy(value);
+  }
+
   public static Object print_result(Object value) {
     System.out.println(value_text(value));
     return null;

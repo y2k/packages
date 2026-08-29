@@ -79,6 +79,10 @@ export function truthy(value) {
   );
 }
 
+export function not(value) {
+  return !truthy(value);
+}
+
 export function print_result(value) {
   console.log(valueText(value));
 }
