@@ -137,7 +137,10 @@ export function drop(count, list) {
 export function reduce(fn, init, list) {
   const hasInit = arguments.length === 3;
   if (!hasInit) list = init;
-  if (!Array.isArray(list)) throw new Error("reduce expects a function and a list");
+  if (!Array.isArray(list)) {
+    if (list !== null && typeof list === "object") list = Object.entries(list);
+    else throw new Error("reduce expects a list or hash-map");
+  }
   if (!hasInit && list.length === 0) throw new Error("reduce expects a non-empty list");
   return hasInit
     ? list.reduce((acc, item) => fn(acc, item), init)

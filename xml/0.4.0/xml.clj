@@ -5,7 +5,7 @@
    (fn [acc [k v]]
      (str acc " " k "='" v "'"))
    ""
-   (Object/entries attrs)))
+   attrs))
 
 (defn to-string [node]
   (if (vector? node)
@@ -13,9 +13,9 @@
       (if (= 1 (count node))
         (str "<" tag "></" tag ">")
         (if (= 2 (count node))
-          (str "<" tag " " (attrs_to_string (get node 1)) ">"
+          (str "<" tag (attrs_to_string (get node 1)) ">"
                "</" tag ">")
-          (str "<" tag " " (attrs_to_string (get node 1)) ">"
+          (str "<" tag (attrs_to_string (get node 1)) ">"
                (reduce
                 (fn [a x] (str a (to-string x)))
                 ""

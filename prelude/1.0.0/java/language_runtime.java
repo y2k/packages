@@ -183,10 +183,20 @@ public final class language_runtime {
     return new java.util.ArrayList<Object>(items.subList(start, items.size()));
   }
 
-  public static Object reduce(Object fn, Object collection) throws Exception {
-    if (!(collection instanceof java.util.List<?> items)) {
-      throw new RuntimeException("reduce expects a function and a list");
+  static java.util.List<?> reduce_items(Object collection) {
+    if (collection instanceof java.util.List<?> items)
+      return items;
+    if (collection instanceof java.util.Map<?, ?> map) {
+      var items = new java.util.ArrayList<java.util.List<Object>>();
+      for (var entry : map.entrySet())
+        items.add(java.util.Arrays.asList(entry.getKey(), entry.getValue()));
+      return items;
     }
+    throw new RuntimeException("reduce expects a list or hash-map");
+  }
+
+  public static Object reduce(Object fn, Object collection) throws Exception {
+    var items = reduce_items(collection);
     if (items.isEmpty()) {
       throw new RuntimeException("reduce expects a non-empty list");
     }
@@ -197,9 +207,7 @@ public final class language_runtime {
   }
 
   public static Object reduce(Object fn, Object init, Object collection) throws Exception {
-    if (!(collection instanceof java.util.List<?> items)) {
-      throw new RuntimeException("reduce expects a function and a list");
-    }
+    var items = reduce_items(collection);
     Object acc = init;
     for (Object item : items)
       acc = call_fn(fn, acc, item);
