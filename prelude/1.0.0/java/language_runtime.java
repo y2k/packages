@@ -49,6 +49,10 @@ public final class language_runtime {
     return java.util.Objects.equals(left, right);
   }
 
+  public static Boolean not_EQ_(Object left, Object right) {
+    return !_EQ_(left, right);
+  }
+
   public static Boolean _GT_(Object left, Object right) {
     return ((Number) left).intValue() > ((Number) right).intValue();
   }

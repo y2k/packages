@@ -26,6 +26,10 @@ export function _EQ_(left, right) {
   return Object.is(left, right);
 }
 
+export function not_EQ_(left, right) {
+  return !_EQ_(left, right);
+}
+
 export function _GT_(left, right) {
   return left > right;
 }
