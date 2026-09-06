@@ -1,5 +1,7 @@
 # Package Eval Tests Implementation Plan
 
+**Status:** Completed. Current implementation and final checks verified on 2026-09-06; the historical red-phase runs noted below were not preserved.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Добавить падающие assertion-тесты для версий пакетов и проверить их на переносимом `xml/0.4.0`.
@@ -29,7 +31,7 @@
 - Consumes: существующие `Backend_eval.Eval.truthy`-совместимые значения `false`, `nil` и truthy values.
 - Produces: eval-функция `(assert condition)`, возвращающая `true` либо бросающая `Eval_error "assertion failed"`.
 
-- [ ] **Step 1: Add failing evaluator tests**
+- [x] **Step 1: Add failing evaluator tests**
 
 Добавить в `../language/test/eval_ns_test.ml`:
 
@@ -53,7 +55,7 @@ Alcotest.test_case "assert rejects false" `Quick assert_rejects_false;
 Alcotest.test_case "assert rejects nil" `Quick assert_rejects_nil;
 ```
 
-- [ ] **Step 2: Verify the tests fail**
+- [ ] **Step 2: Verify the tests fail** *(Retrospectively unverified: tests and implementation were committed together.)*
 
 Run from `../language`:
 
@@ -63,7 +65,7 @@ dune exec ./test/eval_ns_test.exe
 
 Expected: FAIL с `symbol not found: assert`.
 
-- [ ] **Step 3: Implement the minimal evaluator function**
+- [x] **Step 3: Implement the minimal evaluator function**
 
 Добавить в `../language/backend_eval/eval_stdlib.ml`:
 
@@ -80,7 +82,7 @@ let assert_ _ = function
 ("assert", Closure (Native assert_));
 ```
 
-- [ ] **Step 4: Format and verify**
+- [x] **Step 4: Format and verify**
 
 Run from `../language`:
 
@@ -102,7 +104,7 @@ Expected: suite `eval ns` passes.
 - Consumes: `(reduce fn init collection)` and map values produced by `hash-map`.
 - Produces: JS and Java parity with eval, where each map entry is passed as `[key value]`.
 
-- [ ] **Step 1: Add a failing cross-target sample**
+- [x] **Step 1: Add a failing cross-target sample**
 
 Create `../language/test/samples/map_reduce.clj`:
 
@@ -116,7 +118,7 @@ Create `../language/test/samples/map_reduce.clj`:
    {:a 1 :b 2}))
 ```
 
-- [ ] **Step 2: Verify JS and Java fail while eval passes**
+- [ ] **Step 2: Verify JS and Java fail while eval passes** *(Retrospectively unverified: the sample and runtime fixes were committed together.)*
 
 Run from `../language`:
 
@@ -126,7 +128,7 @@ make test_smoke
 
 Expected: new sample passes on eval and fails on JS or Java because runtime `reduce` accepts only lists.
 
-- [ ] **Step 3: Extend the JavaScript runtime**
+- [x] **Step 3: Extend the JavaScript runtime**
 
 В `prelude/1.0.0/js/language_runtime.js`, после `if (!hasInit) list = init;`, преобразовать map в entries перед существующим list reduction:
 
@@ -139,7 +141,7 @@ if (!Array.isArray(list)) {
 
 Удалить прежнюю проверку, которая безусловно бросает для non-array.
 
-- [ ] **Step 4: Extend the Java runtime**
+- [x] **Step 4: Extend the Java runtime**
 
 Добавить в `prelude/1.0.0/java/language_runtime.java` один общий conversion helper:
 
@@ -163,7 +165,7 @@ static java.util.List<?> reduce_items(Object collection) {
 var items = reduce_items(collection);
 ```
 
-- [ ] **Step 5: Verify cross-target parity**
+- [x] **Step 5: Verify cross-target parity**
 
 Run from `../language`:
 
@@ -183,7 +185,7 @@ Expected: sample `map_reduce.clj` and the smoke suite pass on eval, JS and Java.
 - Consumes: eval `(assert condition)`, package loading via `(deps {:xml "0.4.0"})`, and portable map `reduce`.
 - Produces: local test command and XML without redundant spaces.
 
-- [ ] **Step 1: Add the failing package test**
+- [x] **Step 1: Add the failing package test**
 
 Create `xml/0.4.0/test/xml_test.clj`:
 
@@ -200,7 +202,7 @@ Create `xml/0.4.0/test/xml_test.clj`:
            (xml/to-string [:root {} [:child]])))
 ```
 
-- [ ] **Step 2: Verify the package test fails**
+- [ ] **Step 2: Verify the package test fails** *(Retrospectively unverified: the test and XML fix were committed together.)*
 
 Run from the packages repository root:
 
@@ -210,7 +212,7 @@ ly2k --target eval < xml/0.4.0/test/xml_test.clj
 
 Expected: FAIL on `Object/entries` or the existing redundant XML spaces.
 
-- [ ] **Step 3: Remove JS-specific entries and redundant spaces**
+- [x] **Step 3: Remove JS-specific entries and redundant spaces**
 
 В `xml/0.4.0/xml.clj` изменить `attrs_to_string`, передавая map прямо в portable `reduce`:
 
@@ -239,7 +241,7 @@ Expected: FAIL on `Object/entries` or the existing redundant XML spaces.
      "</" tag ">")
 ```
 
-- [ ] **Step 4: Verify the package test**
+- [x] **Step 4: Verify the package test**
 
 Run from the packages repository root:
 
@@ -249,7 +251,7 @@ ly2k --target eval < xml/0.4.0/test/xml_test.clj
 
 Expected: output `true`, exit code 0.
 
-- [ ] **Step 5: Run final verification**
+- [x] **Step 5: Run final verification**
 
 Run from `../language`:
 
