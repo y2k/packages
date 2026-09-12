@@ -1,5 +1,39 @@
+class Atom {
+  constructor(value) {
+    this.value = value;
+  }
+}
+
+export function atom(value) {
+  if (arguments.length !== 1) throw new Error("atom expects one value");
+  return new Atom(value);
+}
+
+export function deref(reference) {
+  if (arguments.length !== 1 || !(reference instanceof Atom))
+    throw new Error("deref expects one atom");
+  return reference.value;
+}
+
+export function reset_BANG_(reference, value) {
+  if (arguments.length !== 2 || !(reference instanceof Atom))
+    throw new Error("reset! expects an atom and a value");
+  reference.value = value;
+  return value;
+}
+
+export function swap_BANG_(reference, fn) {
+  if (arguments.length !== 2 || !(reference instanceof Atom) || typeof fn !== "function")
+    throw new Error("swap! expects an atom and a function");
+  // ponytail: sequential updates; synchronization needs a separate concurrency contract.
+  const value = fn(reference.value);
+  reference.value = value;
+  return value;
+}
+
 function valueText(value) {
   if (value === null || value === undefined) return "nil";
+  if (value instanceof Atom) return "#<atom>";
   if (Array.isArray(value)) return `(${value.map(valueText).join(" ")})`;
   if (typeof value === "object") {
     return `{${Object.entries(value)
@@ -68,9 +102,15 @@ export function hash_map(...items) {
 }
 
 export function get(collection, key) {
+  if (collection === null) return null;
   if (Array.isArray(collection)) return Number.isInteger(key) && key >= 0 ? collection[key] ?? null : null;
   if (collection !== null && typeof collection === "object") return collection[valueText(key)] ?? null;
   throw new Error("get expects a hash-map/list and a key/index");
+}
+
+export function get_in(collection, keys) {
+  if (!Array.isArray(keys)) throw new Error("get-in expects a collection and a vector path");
+  return keys.reduce((value, key) => get(value, key), collection);
 }
 
 export function truthy(value) {

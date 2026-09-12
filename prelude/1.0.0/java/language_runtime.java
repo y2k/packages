@@ -2,6 +2,40 @@ package y2k.language;
 
 public final class language_runtime {
 
+  private static final class Atom {
+    Object value;
+
+    Atom(Object value) {
+      this.value = value;
+    }
+  }
+
+  public static Object atom(Object value) {
+    return new Atom(value);
+  }
+
+  public static Object deref(Object reference) {
+    if (!(reference instanceof Atom cell))
+      throw new RuntimeException("deref expects one atom");
+    return cell.value;
+  }
+
+  public static Object reset_BANG_(Object reference, Object value) {
+    if (!(reference instanceof Atom cell))
+      throw new RuntimeException("reset! expects an atom and a value");
+    cell.value = value;
+    return value;
+  }
+
+  public static Object swap_BANG_(Object reference, Object fn) throws Exception {
+    if (!(reference instanceof Atom cell))
+      throw new RuntimeException("swap! expects an atom and a function");
+    // ponytail: sequential updates; synchronization needs a separate concurrency contract.
+    Object value = call_fn(fn, cell.value);
+    cell.value = value;
+    return value;
+  }
+
   @FunctionalInterface
   public interface Fn0 {
     Object call() throws Exception;
@@ -91,6 +125,7 @@ public final class language_runtime {
   }
 
   public static Object get(Object collection, Object key) {
+    if (collection == null) return null;
     if (collection instanceof java.util.List<?> items && key instanceof Number index) {
       int i = index.intValue();
       return i >= 0 && i < items.size() ? items.get(i) : null;
@@ -98,6 +133,14 @@ public final class language_runtime {
     if (collection instanceof java.util.Map<?, ?> items)
       return items.get(value_text(key));
     throw new RuntimeException("get expects a hash-map/list and a key/index");
+  }
+
+  public static Object get_in(Object collection, Object keys) {
+    if (!(keys instanceof java.util.List<?> path))
+      throw new RuntimeException("get-in expects a collection and a vector path");
+    for (Object key : path)
+      collection = get(collection, key);
+    return collection;
   }
 
   public static boolean truthy(Object value) {
@@ -251,6 +294,8 @@ public final class language_runtime {
   static String value_text(Object value) {
     if (value == null)
       return "nil";
+    if (value instanceof Atom)
+      return "#<atom>";
     if (value instanceof java.util.List<?> list) {
       var items = new java.util.ArrayList<String>();
       for (Object item : list)
