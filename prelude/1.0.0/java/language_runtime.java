@@ -174,23 +174,53 @@ public final class language_runtime {
     return join_str(items, "");
   }
 
-  public static Integer _PLUS_(Object... items) {
+  private static boolean has_floating(Object[] items) {
+    for (Object item : items)
+      if (item instanceof Double || item instanceof Float) return true;
+    return false;
+  }
+
+  private static Number normalize_number(double value) {
+    if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE && value == Math.rint(value))
+      return (int) value;
+    return value;
+  }
+
+  public static Number _PLUS_(Object... items) {
+    if (has_floating(items)) {
+      double result = 0;
+      for (Object item : items)
+        result += ((Number) item).doubleValue();
+      return normalize_number(result);
+    }
     int result = 0;
     for (Object item : items)
       result += ((Number) item).intValue();
     return result;
   }
 
-  public static Integer _MINUS_(Object... items) {
+  public static Number _MINUS_(Object... items) {
     if (items.length == 0)
       throw new RuntimeException("- expects at least one number");
+    if (has_floating(items)) {
+      double result = ((Number) items[0]).doubleValue();
+      for (int i = 1; i < items.length; i++)
+        result -= ((Number) items[i]).doubleValue();
+      return normalize_number(result);
+    }
     int result = ((Number) items[0]).intValue();
     for (int i = 1; i < items.length; i++)
       result -= ((Number) items[i]).intValue();
     return result;
   }
 
-  public static Integer _STAR_(Object... items) {
+  public static Number _STAR_(Object... items) {
+    if (has_floating(items)) {
+      double result = 1;
+      for (Object item : items)
+        result *= ((Number) item).doubleValue();
+      return normalize_number(result);
+    }
     int result = 1;
     for (Object item : items)
       result *= ((Number) item).intValue();

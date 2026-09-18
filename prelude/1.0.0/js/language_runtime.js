@@ -144,16 +144,19 @@ export function str(...items) {
 }
 
 export function _PLUS_(...items) {
-  return items.reduce((sum, item) => sum + item, 0);
+  const result = items.reduce((sum, item) => sum + item, 0);
+  return result === 0 ? 0 : result;
 }
 
 export function _MINUS_(...items) {
   if (items.length === 0) throw new Error("- expects at least one number");
-  return items.slice(1).reduce((result, item) => result - item, items[0]);
+  const result = items.slice(1).reduce((result, item) => result - item, items[0]);
+  return result === 0 ? 0 : result;
 }
 
 export function _STAR_(...items) {
-  return items.reduce((result, item) => result * item, 1);
+  const result = items.reduce((result, item) => result * item, 1);
+  return result === 0 ? 0 : result;
 }
 
 export function _SLASH_(...items) {
