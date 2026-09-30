@@ -1,6 +1,69 @@
 package y2k.language;
 
 public final class language_runtime {
+  public static Object re_pattern(Object... args) {
+    // A lone null literal is passed by javac as a null varargs array.
+    if (args == null) throw new RuntimeException("re-pattern expects a string");
+    if (args.length != 1) throw new RuntimeException("re-pattern expects 1 argument");
+    if (!(args[0] instanceof String pattern)) throw new RuntimeException("re-pattern expects a string");
+    var normalized = new StringBuilder();
+    boolean inClass = false;
+    for (int i = 0; i < pattern.length(); i++) {
+      char c = pattern.charAt(i);
+      if (c == '\\' && i + 1 < pattern.length()) {
+        normalized.append(c).append(pattern.charAt(++i));
+      } else if (c == '$' && !inClass) {
+        normalized.append("\\z");
+      } else {
+        normalized.append(c);
+        if (c == '[') inClass = true;
+        else if (c == ']') inClass = false;
+      }
+    }
+    try {
+      return java.util.regex.Pattern.compile(normalized.toString());
+    } catch (java.util.regex.PatternSyntaxException error) {
+      throw new RuntimeException("re-pattern: invalid pattern", error);
+    }
+  }
+
+  public static Object re_find(Object... args) {
+    if (args == null || args.length != 2) throw new RuntimeException("re-find expects 2 arguments");
+    if (!(args[0] instanceof java.util.regex.Pattern regex)) throw new RuntimeException("re-find expects a regex");
+    if (!(args[1] instanceof String text)) throw new RuntimeException("re-find expects a string text");
+    var matcher = regex.matcher(text);
+    return matcher.find() ? matcher.group() : null;
+  }
+
+  public static Object re_replace(Object... args) {
+    if (args == null || args.length != 3) throw new RuntimeException("re-replace expects 3 arguments");
+    if (!(args[1] instanceof java.util.regex.Pattern regex)) throw new RuntimeException("re-replace expects a regex");
+    if (!(args[0] instanceof String text) || !(args[2] instanceof String replacement))
+      throw new RuntimeException("re-replace expects string text and replacement");
+    var matcher = regex.matcher(text);
+    var result = new StringBuilder();
+    int copied = 0;
+    int search = 0;
+    int nonemptyEnd = -1;
+    while (matcher.find(search)) {
+      int start = matcher.start();
+      int end = matcher.end();
+      // Re skips the empty match immediately following a nonempty one.
+      if (start != end || start != nonemptyEnd) {
+        result.append(text, copied, start).append(replacement);
+        copied = end;
+      }
+      if (start == end) {
+        if (end == text.length()) break;
+        search = end + 1;
+      } else {
+        nonemptyEnd = end;
+        search = end;
+      }
+    }
+    return result.append(text, copied, text.length()).toString();
+  }
+
 
   private static final class Atom {
     Object value;
@@ -80,6 +143,7 @@ public final class language_runtime {
   }
 
   public static Boolean _EQ_(Object left, Object right) {
+    if (left instanceof java.util.regex.Pattern || right instanceof java.util.regex.Pattern) return false;
     return java.util.Objects.equals(left, right);
   }
 
@@ -144,7 +208,7 @@ public final class language_runtime {
   }
 
   public static boolean truthy(Object value) {
-    return !(value == null || Boolean.FALSE.equals(value) || "false".equals(value) || "nil".equals(value));
+    return !(value == null || Boolean.FALSE.equals(value));
   }
 
   public static Boolean not(Object value) {
@@ -322,6 +386,8 @@ public final class language_runtime {
   }
 
   static String value_text(Object value) {
+    if (value instanceof java.util.regex.Pattern)
+      return "#<regex>";
     if (value == null)
       return "nil";
     if (value instanceof Atom)

@@ -4,6 +4,60 @@ class Atom {
   }
 }
 
+class Regex {
+  constructor(pattern) {
+    this.compiled = new RegExp(pattern);
+  }
+}
+
+export function re_pattern(pattern) {
+  if (arguments.length !== 1) throw new Error("re-pattern expects 1 argument");
+  if (typeof pattern !== "string") throw new Error("re-pattern expects a string");
+  try {
+    return new Regex(pattern);
+  } catch (error) {
+    if (error instanceof SyntaxError) throw new Error("re-pattern: invalid pattern");
+    throw error;
+  }
+}
+
+export function re_find(regex, text) {
+  if (arguments.length !== 2) throw new Error("re-find expects 2 arguments");
+  if (!(regex instanceof Regex)) throw new Error("re-find expects a regex");
+  if (typeof text !== "string") throw new Error("re-find expects a string text");
+  const match = regex.compiled.exec(text);
+  return match === null ? null : match[0];
+}
+
+export function re_replace(text, regex, replacement) {
+  if (arguments.length !== 3) throw new Error("re-replace expects 3 arguments");
+  if (!(regex instanceof Regex)) throw new Error("re-replace expects a regex");
+  if (typeof text !== "string" || typeof replacement !== "string")
+    throw new Error("re-replace expects string text and replacement");
+  const matcher = new RegExp(regex.compiled.source, "g");
+  const parts = [];
+  let copied = 0;
+  let nonemptyEnd = -1;
+  let match;
+  while ((match = matcher.exec(text)) !== null) {
+    const start = match.index;
+    const end = start + match[0].length;
+    // Re skips the empty match immediately following a nonempty one.
+    if (start !== end || start !== nonemptyEnd) {
+      parts.push(text.slice(copied, start), replacement);
+      copied = end;
+    }
+    if (start === end) {
+      if (end === text.length) break;
+      matcher.lastIndex = end + 1;
+    } else {
+      nonemptyEnd = end;
+    }
+  }
+  parts.push(text.slice(copied));
+  return parts.join("");
+}
+
 export function atom(value) {
   if (arguments.length !== 1) throw new Error("atom expects one value");
   return new Atom(value);
@@ -34,6 +88,7 @@ export function swap_BANG_(reference, fn) {
 function valueText(value) {
   if (value === null || value === undefined) return "nil";
   if (value instanceof Atom) return "#<atom>";
+  if (value instanceof Regex) return "#<regex>";
   if (Array.isArray(value)) return `(${value.map(valueText).join(" ")})`;
   if (typeof value === "object") {
     return `{${Object.entries(value)
@@ -57,6 +112,7 @@ export function vector_QMARK_(value) {
 }
 
 export function _EQ_(left, right) {
+  if (left instanceof Regex || right instanceof Regex) return false;
   return Object.is(left, right);
 }
 
@@ -117,9 +173,7 @@ export function truthy(value) {
   return (
     value !== false &&
     value !== null &&
-    value !== undefined &&
-    value !== "false" &&
-    value !== "nil"
+    value !== undefined
   );
 }
 
