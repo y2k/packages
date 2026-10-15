@@ -66,6 +66,10 @@ endif
 
 (defn makefile [config]
   (let [target (get config :target)
+        runtime-file (str "language_runtime." target)
+        runtime-path (if (= target "java")
+                       (str "y2k/language/" runtime-file)
+                       runtime-file)
         dirs (get config :dirs)
         libs (or (get config :libs) {})
         dirs-text (join-dir-paths dirs)
@@ -85,15 +89,15 @@ LY2K_TARGET ?= " target "
 OUT_EXT ?= " target "
 DIRS := " dirs-text "
 BUILD_DIRS := $(sort " build-dirs-text ")
-RUNTIME_SOURCE := $(LY2K_PACKAGES_DIR)/prelude/1.0.0/js/language_runtime.js
-RUNTIME_FILES := $(addsuffix /language_runtime.js,$(BUILD_DIRS))
+RUNTIME_SOURCE := $(LY2K_PACKAGES_DIR)/prelude/1.0.0/" target "/" runtime-file "
+RUNTIME_FILES := $(addsuffix /" runtime-path ",$(BUILD_DIRS))
 
 ifndef LY2K_PACKAGES_DIR
 $(error LY2K_PACKAGES_DIR is required)
 endif
 " library-checks-text "
 ifeq ($(wildcard $(RUNTIME_SOURCE)),)
-$(error JS runtime not found: $(RUNTIME_SOURCE))
+$(error Runtime not found: $(RUNTIME_SOURCE))
 endif
 
 # Рекурсивный поиск .clj-файлов в настроенных папках.

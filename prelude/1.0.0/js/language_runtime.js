@@ -5,16 +5,18 @@ class Atom {
 }
 
 class Regex {
-  constructor(pattern) {
-    this.compiled = new RegExp(pattern);
+  constructor(pattern, flags) {
+    this.compiled = new RegExp(pattern, flags);
   }
 }
 
-export function re_pattern(pattern) {
-  if (arguments.length !== 1) throw new Error("re-pattern expects 1 argument");
+export function re_pattern(pattern, flags) {
+  if (arguments.length !== 1 && arguments.length !== 2) throw new Error("re-pattern expects 1 or 2 arguments");
   if (typeof pattern !== "string") throw new Error("re-pattern expects a string");
+  if (arguments.length === 1) flags = "";
+  if (flags !== "" && flags !== "i") throw new Error('re-pattern expects flags to be "" or "i"');
   try {
-    return new Regex(pattern);
+    return new Regex(pattern, flags);
   } catch (error) {
     if (error instanceof SyntaxError) throw new Error("re-pattern: invalid pattern");
     throw error;
@@ -29,12 +31,20 @@ export function re_find(regex, text) {
   return match === null ? null : match[0];
 }
 
+export function re_find_groups(regex, text) {
+  if (arguments.length !== 2) throw new Error("re-find-groups expects 2 arguments");
+  if (!(regex instanceof Regex)) throw new Error("re-find-groups expects a regex");
+  if (typeof text !== "string") throw new Error("re-find-groups expects a string text");
+  const match = regex.compiled.exec(text);
+  return match === null ? null : Array.from(match, group => group ?? null);
+}
+
 export function re_replace(text, regex, replacement) {
   if (arguments.length !== 3) throw new Error("re-replace expects 3 arguments");
   if (!(regex instanceof Regex)) throw new Error("re-replace expects a regex");
   if (typeof text !== "string" || typeof replacement !== "string")
     throw new Error("re-replace expects string text and replacement");
-  const matcher = new RegExp(regex.compiled.source, "g");
+  const matcher = new RegExp(regex.compiled.source, regex.compiled.flags + "g");
   const parts = [];
   let copied = 0;
   let nonemptyEnd = -1;
@@ -111,6 +121,10 @@ export function vector_QMARK_(value) {
   return Array.isArray(value);
 }
 
+export function string_QMARK_(value) {
+  return typeof value === "string";
+}
+
 export function _EQ_(left, right) {
   if (left instanceof Regex || right instanceof Regex) return false;
   return Object.is(left, right);
@@ -145,6 +159,11 @@ export function concat(...collections) {
   return result;
 }
 
+// ponytail: repeated append is quadratic; use a builder if large batches need it.
+export function conj(items, value) {
+  return concat(items, [value]);
+}
+
 export function hash_map(...items) {
   if (items.length % 2 !== 0) {
     throw new Error("hash-map arguments must be key/value pairs");
@@ -155,6 +174,21 @@ export function hash_map(...items) {
     result[valueText(items[i])] = items[i + 1];
   }
   return result;
+}
+
+export function assoc(collection, key, value) {
+  if (arguments.length !== 3 || collection === null || typeof collection !== "object" || Array.isArray(collection))
+    throw new Error("assoc expects a hash-map, a key, and a value");
+  const result = Object.assign(Object.create(null), collection);
+  result[valueText(key)] = value;
+  return result;
+}
+
+export function merge(left, right) {
+  if (arguments.length !== 2 || left === null || typeof left !== "object" || Array.isArray(left) ||
+      right === null || typeof right !== "object" || Array.isArray(right))
+    throw new Error("merge expects two hash-maps");
+  return Object.assign(Object.create(null), left, right);
 }
 
 export function get(collection, key) {
@@ -231,10 +265,32 @@ export function map(fn, list) {
   return list.map((item) => fn(item));
 }
 
+export function filter(fn, list) {
+  if (!Array.isArray(list)) throw new Error("filter expects a function and a list");
+  return list.filter((item) => truthy(fn(item)));
+}
+
+export function keep(fn, list) {
+  if (!Array.isArray(list)) throw new Error("keep expects a function and a list");
+  const result = [];
+  for (const item of list) {
+    const value = fn(item);
+    if (value !== null && value !== undefined) result.push(value);
+  }
+  return result;
+}
+
 export function run_BANG_(fn, list) {
   if (!Array.isArray(list)) throw new Error("run! expects a function and a list");
   for (const item of list) fn(item);
   return null;
+}
+
+export function sort_by(fn, list) {
+  if (!Array.isArray(list)) throw new Error("sort-by expects a function and a list");
+  const keyed = list.map((item) => [fn(item), item]);
+  keyed.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
+  return keyed.map(([, item]) => item);
 }
 
 export function drop(count, list) {

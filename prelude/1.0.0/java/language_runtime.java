@@ -4,8 +4,11 @@ public final class language_runtime {
   public static Object re_pattern(Object... args) {
     // A lone null literal is passed by javac as a null varargs array.
     if (args == null) throw new RuntimeException("re-pattern expects a string");
-    if (args.length != 1) throw new RuntimeException("re-pattern expects 1 argument");
+    if (args.length != 1 && args.length != 2) throw new RuntimeException("re-pattern expects 1 or 2 arguments");
     if (!(args[0] instanceof String pattern)) throw new RuntimeException("re-pattern expects a string");
+    Object flags = args.length == 1 ? "" : args[1];
+    if (!"".equals(flags) && !"i".equals(flags))
+      throw new RuntimeException("re-pattern expects flags to be \"\" or \"i\"");
     var normalized = new StringBuilder();
     boolean inClass = false;
     for (int i = 0; i < pattern.length(); i++) {
@@ -21,7 +24,8 @@ public final class language_runtime {
       }
     }
     try {
-      return java.util.regex.Pattern.compile(normalized.toString());
+      return java.util.regex.Pattern.compile(normalized.toString(),
+          "i".equals(flags) ? java.util.regex.Pattern.CASE_INSENSITIVE : 0);
     } catch (java.util.regex.PatternSyntaxException error) {
       throw new RuntimeException("re-pattern: invalid pattern", error);
     }
@@ -33,6 +37,17 @@ public final class language_runtime {
     if (!(args[1] instanceof String text)) throw new RuntimeException("re-find expects a string text");
     var matcher = regex.matcher(text);
     return matcher.find() ? matcher.group() : null;
+  }
+
+  public static Object re_find_groups(Object... args) {
+    if (args == null || args.length != 2) throw new RuntimeException("re-find-groups expects 2 arguments");
+    if (!(args[0] instanceof java.util.regex.Pattern regex)) throw new RuntimeException("re-find-groups expects a regex");
+    if (!(args[1] instanceof String text)) throw new RuntimeException("re-find-groups expects a string text");
+    var matcher = regex.matcher(text);
+    if (!matcher.find()) return null;
+    var groups = new java.util.ArrayList<Object>();
+    for (int i = 0; i <= matcher.groupCount(); i++) groups.add(matcher.group(i));
+    return groups;
   }
 
   public static Object re_replace(Object... args) {
@@ -142,6 +157,10 @@ public final class language_runtime {
     return value instanceof java.util.List<?>;
   }
 
+  public static Boolean string_QMARK_(Object value) {
+    return value instanceof String;
+  }
+
   public static Boolean _EQ_(Object left, Object right) {
     if (left instanceof java.util.regex.Pattern || right instanceof java.util.regex.Pattern) return false;
     return java.util.Objects.equals(left, right);
@@ -177,6 +196,13 @@ public final class language_runtime {
     return result;
   }
 
+  // ponytail: repeated append is quadratic; use a builder if large batches need it.
+  public static java.util.List<Object> conj(Object items, Object value) {
+    var result = concat(items);
+    result.add(value);
+    return result;
+  }
+
   public static java.util.LinkedHashMap<String, Object> hash_map(Object... items) {
     if (items.length % 2 != 0) {
       throw new RuntimeException("hash-map arguments must be key/value pairs");
@@ -185,6 +211,22 @@ public final class language_runtime {
     for (int i = 0; i < items.length; i += 2) {
       result.put(value_text(items[i]), items[i + 1]);
     }
+    return result;
+  }
+
+  public static java.util.LinkedHashMap<Object, Object> assoc(Object collection, Object key, Object value) {
+    if (!(collection instanceof java.util.Map<?, ?> items))
+      throw new RuntimeException("assoc expects a hash-map, a key, and a value");
+    var result = new java.util.LinkedHashMap<Object, Object>(items);
+    result.put(value_text(key), value);
+    return result;
+  }
+
+  public static java.util.LinkedHashMap<Object, Object> merge(Object left, Object right) {
+    if (!(left instanceof java.util.Map<?, ?> leftItems) || !(right instanceof java.util.Map<?, ?> rightItems))
+      throw new RuntimeException("merge expects two hash-maps");
+    var result = new java.util.LinkedHashMap<Object, Object>(leftItems);
+    result.putAll(rightItems);
     return result;
   }
 
@@ -318,6 +360,30 @@ public final class language_runtime {
     return result;
   }
 
+  public static java.util.List<Object> filter(Object fn, Object collection) throws Exception {
+    if (!(collection instanceof java.util.List<?> items)) {
+      throw new RuntimeException("filter expects a function and a list");
+    }
+    var result = new java.util.ArrayList<Object>();
+    for (Object item : items)
+      if (truthy(call_fn(fn, item)))
+        result.add(item);
+    return result;
+  }
+
+  public static java.util.List<Object> keep(Object fn, Object collection) throws Exception {
+    if (!(collection instanceof java.util.List<?> items)) {
+      throw new RuntimeException("keep expects a function and a list");
+    }
+    var result = new java.util.ArrayList<Object>();
+    for (Object item : items) {
+      Object value = call_fn(fn, item);
+      if (value != null)
+        result.add(value);
+    }
+    return result;
+  }
+
   public static Object run_BANG_(Object fn, Object collection) throws Exception {
     if (!(collection instanceof java.util.List<?> items)) {
       throw new RuntimeException("run! expects a function and a list");
@@ -325,6 +391,27 @@ public final class language_runtime {
     for (Object item : items)
       call_fn(fn, item);
     return null;
+  }
+
+  private static int compare_sort_keys(Object left, Object right) {
+    if (left instanceof String text)
+      return text.compareTo((String) right);
+    double a = ((Number) left).doubleValue(), b = ((Number) right).doubleValue();
+    return a < b ? -1 : a > b ? 1 : 0;
+  }
+
+  public static java.util.List<Object> sort_by(Object fn, Object collection) throws Exception {
+    if (!(collection instanceof java.util.List<?> items))
+      throw new RuntimeException("sort-by expects a function and a list");
+    record Keyed(Object key, Object item) {}
+    var keyed = new java.util.ArrayList<Keyed>();
+    for (Object item : items)
+      keyed.add(new Keyed(call_fn(fn, item), item));
+    keyed.sort((left, right) -> compare_sort_keys(left.key(), right.key()));
+    var result = new java.util.ArrayList<Object>();
+    for (var entry : keyed)
+      result.add(entry.item());
+    return result;
   }
 
   public static java.util.List<Object> drop(Object count, Object collection) {

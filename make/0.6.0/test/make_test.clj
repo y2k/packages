@@ -27,7 +27,7 @@ $(error Library not found: xml 0.4.0)
 endif
 
 ifeq ($(wildcard $(RUNTIME_SOURCE)),)
-$(error JS runtime not found: $(RUNTIME_SOURCE))
+$(error Runtime not found: $(RUNTIME_SOURCE))
 endif
 
 # Рекурсивный поиск .clj-файлов в настроенных папках.
