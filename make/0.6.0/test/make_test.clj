@@ -47,7 +47,7 @@ OUT_FILES += $(foreach build_dir,$(BUILD_DIRS),$(foreach file,$(filter-out $(LY2
 define compile_rule
 $(call out_file,$(1),$(2),$(3)): $(3)
 	@mkdir -p $$(dir $$@)
-	@$$(LY2K) --target $$(LY2K_TARGET) < $$< > $$@
+	@$$(LY2K) --target $$(LY2K_TARGET) $$(if $$(filter js,$$(LY2K_TARGET)),--source-map --source-file \"$$(abspath $$<)\") < $$< > $$@
 endef
 
 # Создаём отдельное правило для каждого найденного .clj-файла.
