@@ -13,7 +13,7 @@
 
 (defn build-apk [{:package-id package-id}]
   (str "
-IMAGE := y2khub/cljdroid@sha256:f7164ab4817da71aa0c6699ae0b62149f9c550f4fac5f01633bc1e9a372de646
+IMAGE := y2khub/cljdroid
 
 .PHONY: build
 build:
